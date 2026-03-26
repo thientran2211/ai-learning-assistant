@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import connectDB from './config/db.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // ES6 module __dirname alternative
