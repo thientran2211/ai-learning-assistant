@@ -303,7 +303,7 @@ export const explainConcept = async (req, res, next) => {
 // @access  Private
 export const getChatHistory = async (req, res, next) => {
   try {
-    const { documentId } = req.body;
+    const { documentId } = req.params;
 
     if (!documentId) {
       return res.status(400).json({
@@ -316,7 +316,7 @@ export const getChatHistory = async (req, res, next) => {
     const chatHistory = await ChatHistory.findOne({
       userId: req.user._id,
       documentId: documentId
-    }).select('message');  // only retrieve the messages array
+    }).select('messages');
 
     if (!chatHistory) {
       return res.status(200).json({
