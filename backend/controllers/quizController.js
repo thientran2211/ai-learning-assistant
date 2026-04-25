@@ -50,13 +50,13 @@ export const getQuizById = async (req, res, next) => {
 };
 
 // @desc    Submit quiz answer
-// @route   GET /api/quizzes/:id/submit
+// @route   POST /api/quizzes/:id/submit
 // @access  Private
 export const submitQuiz = async (req, res, next) => {
   try {
-    const { answer } = req.body;
+    const { answers } = req.body;
 
-    if (!Array.isArray(answer)) {
+    if (!Array.isArray(answers)) {
       return res.status(400).json({
         success: false,
         error: 'Please provide answer array',
@@ -89,7 +89,7 @@ export const submitQuiz = async (req, res, next) => {
     let correctCount = 0;
     const userAnswers = [];
 
-    answer.forEach(answer => {
+    answers.forEach(answer => {
       const { questionIndex, selectedAnswer } = answer;
 
       if (questionIndex < quiz.questions.length) {
