@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { Sparkles, BookOpen, Lightbulb } from 'lucide-react';
 import aiService from '../../services/aiService';
@@ -8,6 +9,7 @@ import Modal from '../common/Modal';
 
 const AIActions = () => {
   const { id: documentId } = useParams();
+  const { t } = useTranslation();
   const [loadingAction, setLoadingAction] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
@@ -18,11 +20,11 @@ const AIActions = () => {
     setLoadingAction("summary");
     try {
       const { summary } = await aiService.generateSummary(documentId);
-      setModalTitle("Generated Summary");
+      setModalTitle(t('aiActions.modalSummary'));
       setModalContent(summary);
       setIsModalOpen(true);
     } catch (error) {
-      toast.error("Failed to generate summary.");
+      toast.error(t('aiActions.errorSummary'));
     } finally {
       setLoadingAction(null);
     }
@@ -31,7 +33,7 @@ const AIActions = () => {
   const handleExplainConcept = async (e) => {
     e.preventDefault();
     if (!concept.trim()) {
-      toast.error("Please enter a concept to explain.");
+      toast.error(t('aiActions.errorInput'));
       return;
     }
     setLoadingAction("explain");
@@ -40,12 +42,12 @@ const AIActions = () => {
         documentId,
         concept
       );
-      setModalTitle(`Explaination of "${concept}"`);
+      setModalTitle(t('aiActions.modalExplanation', { concept }));
       setModalContent(explanation);
       setIsModalOpen(true);
       setConcept("");
     } catch (error) {
-      toast.error("Failed to explain concept.");
+      toast.error(t('aiActions.errorExplanation'));
     } finally {
       setLoadingAction(null);
     }
@@ -62,9 +64,9 @@ const AIActions = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-900">
-                AI Assistant
+                {t('aiActions.title')}
               </h3>
-              <p className="text-xs text-slate-500">Powered by advanced AI</p>
+              <p className="text-xs text-slate-500">{t('aiActions.subtitle')}</p>
             </div>
           </div>
         </div>
@@ -82,11 +84,11 @@ const AIActions = () => {
                     />
                   </div>
                   <h4 className="font-semibold text-slate-900">
-                    Generate Summary
+                    {t('aiActions.summary')}
                   </h4>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Get a concise summary of the entire document.
+                  {t('aiActions.descSummary')}
                 </p>
               </div>
               <button
@@ -97,10 +99,10 @@ const AIActions = () => {
                 {loadingAction === "summary" ? (
                   <span className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Loading...
+                    {t('common.loading')}
                   </span>
                 ) : (
-                  "Summarize"
+                  t('aiActions.btnSummarize')
                 )}
               </button>
             </div>
@@ -117,18 +119,18 @@ const AIActions = () => {
                   />
                 </div>
                 <h4 className="font-semibold text-slate-900">
-                  Explain a concept
+                  {t('aiActions.explain')}
                 </h4>
               </div>
               <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                Enter a topic or concept from the document to get a detailed explanation.
+                {t('aiActions.descExplanation')}
               </p>
               <div className="flex items-center gap-3">
                 <input
                   type="text"
                   value={concept}
                   onChange={(e) => setConcept(e.target.value)}
-                  placeholder="e.g., Example"
+                  placeholder={t('aiActions.inputExplain')}
                   className="flex-1 h-11 px-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-purple-500/10"
                   disabled={loadingAction === "explain"}
                 />
@@ -140,10 +142,10 @@ const AIActions = () => {
                   {loadingAction === "explain" ? (
                     <span className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Loading...
+                      {t('common.loading')}
                     </span>
                   ) : (
-                    "Explain"
+                    t('aiActions.btnExplain')
                   )}
                 </button>
               </div>
@@ -163,7 +165,7 @@ const AIActions = () => {
         </div>
       </Modal>
     </>
-  )
-}
+  );
+};
 
 export default AIActions;

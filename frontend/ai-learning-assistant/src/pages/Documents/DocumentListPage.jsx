@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Upload, Trash2, FileText, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -22,12 +23,14 @@ const DocumentListPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
 
+  const { t } = useTranslation();
+
   const fetchDocuments = async () => {
     try {
       const data = await documentService.getDocuments();
       setDocuments(data);
     } catch (error) {
-      toast.error("Failed to fetch documents.");
+      toast.error(t('documents.errorFetch'));
       console.error(error);
     } finally {
       setLoading(false);
@@ -49,7 +52,7 @@ const DocumentListPage = () => {
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!uploadFile || !uploadTitle) {
-      toast.error("Please provide a title and select a file.");
+      toast.error(t('documents.errorUpload'));
       return;
     }
     setUploading(true);
@@ -59,14 +62,14 @@ const DocumentListPage = () => {
 
     try {
       await documentService.uploadDocument(formData);
-      toast.success("Document uploaded successfully!");
+      toast.success(t('documents.successUpload'));
       setIsUploadModalOpen(false);
       setUploadFile(null);
       setUploadTitle("");
       setLoading(true);
       fetchDocuments();
     } catch (error) {
-      toast.error(error.message || "Upload failed.");
+      toast.error(error.message || t('documents.errorUpload'));
     } finally {
       setUploading(false);
     }
@@ -82,12 +85,12 @@ const DocumentListPage = () => {
     setDeleting(true);
     try {
       await documentService.deleteDocument(selectedDoc._id);
-      toast.success(`'${selectedDoc.title}' deleted.`);
+      toast.success(t('documents.successDelete', { title: selectedDoc.title }));
       setIsDeleteModalOpen(false);
       setSelectedDoc(null);
       setDocuments(documents.filter((d) => d._id !== selectedDoc._id));
     } catch (error) {
-      toast.error(error.message || "Failed to delete document.");
+      toast.error(error.message || t('documents.errorDelete'));
     } finally {
       setDeleting(false);
     }
@@ -113,17 +116,17 @@ const DocumentListPage = () => {
               />
             </div>
             <h3 className="text-xl font-medium text-slate-900 tracking-tight mb-2">
-              No Documents Yet
+              {t('documents.noDocuments')}
             </h3>
             <p className="text-sm text-slate-500 mb-6">
-              Get started by uploading your first PDF document to begin learning.
+              {t('documents.emptyStateDesc')}
             </p>
             <button
               onClick={() => setIsUploadModalOpen(true)}
               className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98]"
             >
               <Plus className="" strokeWidth={2.5} />
-              Upload Document
+              {t('documents.btnUpload')}
             </button>
           </div>
         </div>
@@ -153,16 +156,16 @@ const DocumentListPage = () => {
         <div className="flex items-center justify-between mb-10">
           <div>
             <h1 className="text-2xl font-medium text-slate-900 tracking-tight mb-2">
-              My Documents
+              {t('documents.title')}
             </h1>
             <p className="text-slate-500 text-sm">
-              Manage and organize your learning materials
+              {t('documents.subtitle')}
             </p>
           </div>
           {documents.length > 0 && (
             <Button onClick={() => setIsUploadModalOpen(true)}>
               <Plus className="w-4 h-4" strokeWidth={2.5} />
-              Upload Document
+              {t('documents.btnUpload')}
             </Button>
           )}
         </div>
@@ -184,10 +187,10 @@ const DocumentListPage = () => {
             {/* Modal header */}
             <div className="mb-6">
               <h2 className="text-xl font-medium text-slate-900 tracking-tight">
-                Upload New Document
+                {t('documents.modalUploadTitle')}
               </h2>
               <p className="text-sm text-slate-500 mt-1">
-                Add a PDF document to your library
+                {t('documents.modalUploadDesc')}
               </p>
             </div>
 
@@ -196,7 +199,7 @@ const DocumentListPage = () => {
               {/* Title input */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                  Document Title
+                  {t('documents.labelTitle')}
                 </label>
                 <input
                   type="text"
@@ -204,14 +207,14 @@ const DocumentListPage = () => {
                   onChange={(e) => setUploadTitle(e.target.value)}
                   required
                   className="w-full h-12 px-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
-                  placeholder="e.g., AI Interview Prep"
+                  placeholder={t('documents.placeholderTitle')}
                 />
               </div>
 
               {/* File upload */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                  PDF File
+                  {t('documents.labelFile')}
                 </label>
                 <div className="relative border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all duration-200">
                   <input
@@ -236,13 +239,13 @@ const DocumentListPage = () => {
                       ) : (
                         <>
                           <span className="text-emerald-600">
-                            Click to upload
+                            {t('documents.clickToUpload')}
                           </span>{" "}
-                          or drap and drop
+                          {t('documents.orDragDrop')}
                         </>
                       )}
                     </p>
-                    <p className="text-xs text-slate-500">PDF up to 10MB</p>
+                    <p className="text-xs text-slate-500">{t('documents.pdfLimit')}</p>
                   </div>
                 </div>
               </div>
@@ -255,7 +258,7 @@ const DocumentListPage = () => {
                   disabled={uploading}
                   className="flex-1 h-11 px-4 border-2 border-slate-200 rounded-xl bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -265,10 +268,10 @@ const DocumentListPage = () => {
                   {uploading ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Uploading...
+                      {t('documents.uploading')}
                     </span>
                   ) : (
-                    "Upload"
+                    t('common.upload')
                   )}
                 </button>
               </div>
@@ -293,17 +296,13 @@ const DocumentListPage = () => {
               <Trash2 className="w-6 h-6 text-red-600" strokeWidth={2} />
             </div>
             <h2 className="text-xl font-medium text-slate-900 tracking-tight">
-              Confirm Deletion
+              {t('documents.modalDeleteTitle')}
             </h2>
           </div>
 
           {/* Content */}
           <p className="text-sm text-slate-600 mb-6">
-            Are you sure you want to delete the document:{" "}
-            <span className="font-semibold text-slate-900">
-              {selectedDoc?.title}
-            </span>
-            ? This action cannot be undone.
+            {t('documents.modalDeleteDesc', { title: selectedDoc?.title })}
           </p>
 
           {/* Action buttons */}
@@ -314,7 +313,7 @@ const DocumentListPage = () => {
               disabled={deleting}
               className="flex-1 h-11 px-4 border-2 border-slate-200 rounded-xl bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={handleConfirmDelete}
@@ -324,10 +323,10 @@ const DocumentListPage = () => {
               {deleting ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Deleting...
+                  {t('documents.deleting')}
                 </span>
               ) : (
-                "Delete"
+                t('common.delete')
               )}
             </button>
           </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LayoutDashboard, FileText, User, LogOut, BrainCircuit, BookOpen, X, Layout } from 'lucide-react';
@@ -7,6 +7,7 @@ import { LayoutDashboard, FileText, User, LogOut, BrainCircuit, BookOpen, X, Lay
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -14,10 +15,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   };
 
   const navLinks = [
-    { to: '/dashboard', icon: LayoutDashboard, text: 'Dashboard' },
-    { to: '/documents', icon: FileText, text: 'Documents' },
-    { to: '/flashcards', icon: BookOpen, text: 'Flashcards' },
-    { to: '/profile', icon: User, text: 'Profile' },
+    { to: '/dashboard', icon: LayoutDashboard, text: t('sidebar.dashboard') },
+    { to: '/documents', icon: FileText, text: t('sidebar.documents') },
+    { to: '/flashcards', icon: BookOpen, text: t('sidebar.flashcards') },
+    { to: '/profile', icon: User, text: t('sidebar.profile') },
   ];
 
   return (
@@ -37,7 +38,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
             <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-linear-to-br from-emerald-400 to-teal-500 shadow-md shadow-emerald-500/200">
               <BrainCircuit className="text-white" size={20} strokeWidth={2.5} />
             </div>
-            <h1 className="text-sm md:text-base font-bold text-slate-900 tracking-tight">AI Learning Assistant</h1>
+            <h1 className="text-sm md:text-base font-bold text-slate-900 tracking-tight">{t('header.title')}</h1>
           </div>
           <button onClick={toggleSidebar} className="md:hidden text-slate-500 hover:text-slate-800">
             <X size={24} />
@@ -81,7 +82,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               strokeWidth={2.5}
               className="transition-transform duration-200 group-hover:scale-110"
             />
-            Logout
+            {t('sidebar.logout')}
           </button>
         </div>
       </aside>

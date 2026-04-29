@@ -1,7 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDateFormat } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Trash2, BookOpen, BrainCircuit, Clock } from 'lucide-react';
-import moment from 'moment';
 
 // Helper function to format fize size
 const formatFileSize = (bytes) => {
@@ -21,6 +22,8 @@ const formatFileSize = (bytes) => {
 
 const DocumentCard = ({ document, onDelete }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { formatRelativeTime } = useDateFormat();
 
   const handleNavigate = () => {
     navigate(`/documents/${document._id}`);
@@ -44,6 +47,7 @@ const DocumentCard = ({ document, onDelete }) => {
         <button
           onClick={handleDelete}
           className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+          title={t('common.delete')}
         >
           <Trash2 className="w-4 h-4" strokeWidth={2} />
         </button>
@@ -68,13 +72,13 @@ const DocumentCard = ({ document, onDelete }) => {
         {document.flashcardCount !== undefined && (
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 rounded-lg">
             <BookOpen className="w-3.5 h-3.5 text-purple-600" strokeWidth={2} />
-            <span className="text-xs font-semibold text-purple-700">{document.flashcardCount} Flashcards</span>
+            <span className="text-xs font-semibold text-purple-700">{document.flashcardCount} {t('documents.flashcardsLabel')}</span>
           </div>
         )}
         {document.quizCount !== undefined && (
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 rounded-lg">
             <BrainCircuit className="w-3.5 h-3.5 text-emerald-600" strokeWidth={2} />
-            <span className="text-xs font-semibold text-emerald-700">{document.quizCount} Quizzes</span>
+            <span className="text-xs font-semibold text-emerald-700">{document.quizCount} {t('documents.quizzesLabel')}</span>
           </div>
         )}
       </div>
@@ -84,7 +88,7 @@ const DocumentCard = ({ document, onDelete }) => {
     <div className="mt-5 pt-4 border-t border-slate-100">
       <div className="flex items-center gap-1.5 text-xs text-slate-500">
         <Clock className="w-3.5 h-3.5" strokeWidth={2} />
-        <span>Uploaded {moment(document.creatAt).fromNow()}</span>
+        <span>{t('documents.uploaded')} {formatRelativeTime(document.createdAt)}</span>
       </div>
     </div>
 

@@ -10,7 +10,7 @@ import { findRelevantChunks } from '../utils/textChunker.js';
 // @access  Private
 export const generateFlashcards = async (req, res, next) => {
   try {
-    const { documentId, count = 10 } = req.body;
+    const { documentId, count = 10, language = 'en' } = req.body;
 
     if (!documentId) {
       return res.status(400).json({
@@ -37,7 +37,8 @@ export const generateFlashcards = async (req, res, next) => {
     // Generate flashcards using Gemini
     const cards = await geminiService.generateFlashcards(
       document.extractedText,
-      parseInt(count)
+      parseInt(count),
+      language
     );
 
     // Save to database
@@ -68,7 +69,7 @@ export const generateFlashcards = async (req, res, next) => {
 // @access  Private
 export const generateQuiz = async (req, res, next) => {
   try {
-    const { documentId, numQuestions = 5, title } = req.body;
+    const { documentId, numQuestions = 5, title, language = 'en' } = req.body;
 
     if (!documentId) {
       return res.status(400).json({
@@ -95,7 +96,8 @@ export const generateQuiz = async (req, res, next) => {
     // generate quiz using gemini
     const questions = await geminiService.generateQuiz(
       document.extractedText,
-      parseInt(numQuestions)
+      parseInt(numQuestions),
+      language
     );
 
     // save to database
@@ -124,7 +126,7 @@ export const generateQuiz = async (req, res, next) => {
 // @access  Private
 export const generateSummary = async (req, res, next) => {
   try {
-    const { documentId } = req.body;
+    const { documentId, language = 'en' } = req.body;
 
     if (!documentId) {
       return res.status(400).json({
@@ -149,7 +151,7 @@ export const generateSummary = async (req, res, next) => {
     }
 
     // generate summary using gemini
-    const summary = await geminiService.generateSummary(document.extractedText);
+    const summary = await geminiService.generateSummary(document.extractedText, language);
 
     res.status(200).json({
       success: true,
@@ -170,7 +172,7 @@ export const generateSummary = async (req, res, next) => {
 // @access  Private
 export const chat = async (req, res, next) => {
   try {
-    const { documentId, question } = req.body;
+    const { documentId, question, language = 'en' } = req.body;
 
     if (!documentId || !question) {
       return res.status(400).json({
@@ -213,7 +215,7 @@ export const chat = async (req, res, next) => {
     }
 
     // generate response using gemini
-    const answer = await geminiService.chatWithContext(question, relevantChunks);
+    const answer = await geminiService.chatWithContext(question, relevantChunks, language);
 
     // save conversation
     chatHistory.messages.push(
@@ -253,7 +255,7 @@ export const chat = async (req, res, next) => {
 // @access  Private
 export const explainConcept = async (req, res, next) => {
   try {
-    const { documentId, concept } = req.body;
+    const { documentId, concept, language = 'en' } = req.body;
 
     if (!documentId || !concept) {
       return res.status(400).json({
@@ -282,7 +284,7 @@ export const explainConcept = async (req, res, next) => {
     const context = relevantChunks.map(c => c.content).join('\n\n');
 
     // generate explanation using gemini
-    const explanation = await geminiService.explainConcept(concept, context);
+    const explanation = await geminiService.explainConcept(concept, context, language);
 
     res.status(200).json({
       success: true,

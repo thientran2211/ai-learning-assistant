@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -28,6 +29,8 @@ const FlashcardPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const { t } = useTranslation();
+
   const fetchFlashcards = async () => {
     setLoading(true);
     try {
@@ -35,7 +38,7 @@ const FlashcardPage = () => {
       setFlashcardSets(response.data[0]);
       setFlashcards(response.data[0]?.cards || []);
     } catch (error) {
-      toast.error("Failed to fetch flashcards.")
+      toast.error(t('flashcards.errorFetch'));
       console.error(error);
     } finally {
       setLoading(false);
@@ -50,10 +53,10 @@ const FlashcardPage = () => {
     setGenerating(true);
     try {
       await aiService.generateFlashcards(documentId);
-      toast.success("Flashcards generated successfully!");
+      toast.success(t('flashcards.successGenerate'));
       fetchFlashcards();
     } catch (error) {
-      toast.error(error.message || "Failed to generate flashcards.");
+      toast.error(error.message || t('flashcards.errorGenerate'));
     } finally {
       setGenerating(false);
     }
@@ -77,9 +80,9 @@ const FlashcardPage = () => {
 
     try {
       await flashcardService.reviewFlashcard(currentCard._id, index);
-      toast.success("Flashcard reviewed!");
+      toast.success(t('flashcards.successReview'));
     } catch (error) {
-      toast.error("Failed to review flashcard.");
+      toast.error(t('flashcards.errorReview'));
     }
   };
 
@@ -91,9 +94,9 @@ const FlashcardPage = () => {
           card._id === cardId ? { ...card, isStarred: !card.isStarred } : card
         )
       );
-      toast.success("Flashcard starred status updated!");
+      toast.success(t('flashcards.successStar'));
     } catch (error) {
-      toast.error("Failed to update star status.");
+      toast.error(t('flashcards.errorStar'));
     }
   };
 
@@ -101,11 +104,11 @@ const FlashcardPage = () => {
     setDeleting(true);
     try {
       await flashcardService.deleteFlashcardSet(flashcardSets._id);
-      toast.success("Flashcard set deleted successfully!");
+      toast.success(t('flashcards.successDelete'));
       setIsDeleteModalOpen(false);
       fetchFlashcards(); // refetch to show empty state
     } catch (error) {
-      toast.error(error.message || "Failed to delete flashcard set.");
+      toast.error(error.message || t('flashcards.errorDelete'));
     } finally {
       setDeleting(false);
     }
@@ -119,8 +122,8 @@ const FlashcardPage = () => {
     if (flashcards.length === 0) {
       return (
         <EmptyState
-          title="No Flashcards Yet"
-          description="Generate flashcards from your document to start learning."
+          title={t('flashcards.noFlashcards')}
+          description={t('flashcards.emptyStateDesc')}
         />
       );
     }
@@ -138,7 +141,7 @@ const FlashcardPage = () => {
             variant="secondary"
             disabled={flashcards.length <= 1}
           >
-            <ChevronLeft size={16} /> Previous
+            <ChevronLeft size={16} /> {t('common.previous')}
           </Button>
           <span className="text-sm text-neutral-600">
             {currentCardIndex + 1} / {flashcards.length}
@@ -148,7 +151,7 @@ const FlashcardPage = () => {
             variant='secondary'
             disabled={flashcards.length <= 1}
           >
-            Next <ChevronRight size={16} />
+            {t('common.next')} <ChevronRight size={16} />
           </Button>
         </div>
       </div>
@@ -163,10 +166,10 @@ const FlashcardPage = () => {
           className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
         >
           <ArrowLeft size={16} />
-          Back to Document
+          {t('flashcards.backToDocument')}
         </Link>
       </div>
-      <PageHeader title="Flashcards">
+      <PageHeader title={t('flashcards.title')}>
         <div className="flex gap-2">
             {!loading && (flashcards.length > 0 ? (
               <>
@@ -174,7 +177,7 @@ const FlashcardPage = () => {
                   onClick={() => setIsDeleteModalOpen(true)}
                   disabled={deleting}
                 >
-                  <Trash2 size={16} /> Delete Set
+                  <Trash2 size={16} /> {t('flashcards.btnDeleteSet')}
                 </Button>
               </>
             ) : (
@@ -183,7 +186,7 @@ const FlashcardPage = () => {
                   <Spinner />
                 ) : (
                   <>
-                    <Plus size={16} /> Generate Flashcards
+                    <Plus size={16} /> {t('flashcards.btnGenerate')}
                   </>
                 )}
               </Button>
@@ -196,12 +199,11 @@ const FlashcardPage = () => {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirm Delete Flashcard Set"
+        title={t('flashcards.modalDeleteTitlePage')}
       >
         <div className="space-y-4">
           <p className="text-sm text-neutral-600">
-            Are you sure you want to delete all flashcards for this document?
-            This action cannot be undone.
+            {t('flashcards.modalDeleteDescPage')}
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <Button
@@ -210,14 +212,14 @@ const FlashcardPage = () => {
               onClick={() => setIsDeleteModalOpen(false)}
               disabled={deleting}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleDeleteFlashcardSet}
               disabled={deleting}
               className="bg-red-500 hover:bg-red-600 active:bg-red-700 focus:ring-red-500"
             >
-              {deleting ? "Deleting..." : "Delete"}
+              {deleting ? t('flashcards.deleting') : t('common.delete')}
             </Button>
           </div>
         </div>

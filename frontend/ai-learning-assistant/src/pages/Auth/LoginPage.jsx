@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
@@ -14,6 +15,7 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +24,12 @@ const LoginPage = () => {
     try {
       const { token, user } = await authService.login(email, password);
       login(user, token);
-      toast.success('Logged in successfully!');
+      toast.success(t('auth.successLogin'));
       navigate('/dashboard');
     } catch (error) {
-      setError(error.message || 'Failed to login. Please check your credentials.');
-      toast.error(error.message || 'Failed to login.');
+      const errorMsg = error.message || t('auth.errorLogin');
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -45,10 +48,10 @@ const LoginPage = () => {
               <BrainCircuit className="w-7 h-7 text-white" strokeWidth={2} />
             </div>
             <h1 className="text-2xl font-medium text-slate-900 tracking-tight mb-2">
-              Welcome back
+              {t('auth.loginTitle')}
             </h1>
             <p className="text-slate-500 text-sm">
-              Sign in to continue your journey
+              {t('auth.loginSub')}
             </p>
           </div>
 
@@ -57,7 +60,7 @@ const LoginPage = () => {
             {/* Email Field */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                Email
+                {t('auth.email')}
               </label>
               <div className="relative group">
                 <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200 ${focusedField === 'email' ? 'text-emerald-500' : 'text-slate-400'}`}>
@@ -70,7 +73,7 @@ const LoginPage = () => {
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
                   className="w-full h-12 pl-12 pr-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
-                  placeholder="you@example.com"
+                  placeholder={t('auth.placeholderEmail')}
                 />
               </div>
             </div>
@@ -78,7 +81,7 @@ const LoginPage = () => {
             {/* Password Field */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative group">
                 <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200 ${focusedField === 'password' ? 'text-emerald-500' : 'text-slate-400'}`}>
@@ -91,7 +94,7 @@ const LoginPage = () => {
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
                   className="w-full h-12 pl-12 pr-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
-                  placeholder="•••••••"
+                  placeholder={t('auth.placeholderPassword')}
                 />
               </div>
             </div>
@@ -113,11 +116,11 @@ const LoginPage = () => {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
+                    {t('auth.loadingSignIn')}
                   </>
                 ) : (
                   <>
-                    Sign in
+                    {t('auth.signIn')}
                     <ArrowRight className="w-4 h-4 group-hover: translate-x-1 transition-transform duration-200" strokeWidth={2.5} />
                   </>
                 )}
@@ -129,9 +132,9 @@ const LoginPage = () => {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-slate-200/60">
             <p className="text-center text-sm text-slate-600">
-              Don't have an account?{' '}
+              {t('auth.noAccount')}{' '}
               <Link to='/register' className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors duration-200">
-                Sign up
+                {t('auth.signUp')}
               </Link>
             </p>
           </div>
@@ -139,11 +142,11 @@ const LoginPage = () => {
 
         {/* Subtle footer text */}
         <p className="text-center text-xs text-slate-400 mt-6">
-          By continuing, you agree to our Term & Privacy Policy
+          {t('auth.footerPolicy')}
         </p>
       </div>
     </div>
-  )
+  );
 };
 
 export default LoginPage;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 import { BrainCircuit, Mail, Lock, ArrowRight, User } from 'lucide-react';
@@ -13,12 +14,13 @@ const RegisterPage = () => {
   const [focusedField, setFocusedField] = useState(null);
 
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      setError(t('auth.errorPasswordLength'));
       return;
     }
 
@@ -27,11 +29,12 @@ const RegisterPage = () => {
 
     try {
       await authService.register(username, email, password);
-      toast.success('Registration in successfully! Please login.');
+      toast.success(t('auth.successRegister'));
       navigate('/login');
     } catch (error) {
-      setError(error.message || 'Failed to register. Please try again.');
-      toast.error(error.message || 'Failed to register.');
+      const errorMsg = error.message || t('auth.errorRegister');
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -50,10 +53,10 @@ const RegisterPage = () => {
               <BrainCircuit className="w-7 h-7 text-white" strokeWidth={2} />
             </div>
             <h1 className="text-2xl font-medium text-slate-900 tracking-tight mb-2">
-              Create an account
+              {t('auth.registerTitle')}
             </h1>
             <p className="text-slate-500 text-sm">
-              Start your AI-powered learning experience
+              {t('auth.registerSub')}
             </p>
           </div>
 
@@ -62,7 +65,7 @@ const RegisterPage = () => {
             {/* Username field */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                Username
+                {t('auth.username')}
               </label>
               <div className="relative group">
                 <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200 ${focusedField === "username" ? "text-emerald-500" : "text-slate-400"}`}>
@@ -75,7 +78,7 @@ const RegisterPage = () => {
                   onFocus={() => setFocusedField("username")}
                   onBlur={() => setFocusedField(null)}
                   className="w-full h-12 pl-12 pr-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
-                  placeholder="your username"
+                  placeholder={t('auth.placeholderUsername')}
                 />
               </div>
             </div>
@@ -83,7 +86,7 @@ const RegisterPage = () => {
             {/* Email field */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                Email
+                {t('auth.email')}
               </label>
               <div className="relative group">
                 <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200 ${focusedField === "email" ? "text-emerald-500" : "text-slate-400"}`}>
@@ -96,7 +99,7 @@ const RegisterPage = () => {
                   onFocus={() => setFocusedField("email")}
                   onBlur={() => setFocusedField(null)}
                   className="w-full h-12 pl-12 pr-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
-                  placeholder="you@example.com"
+                  placeholder={t('auth.placeholderEmail')}
                 />
               </div>
             </div>
@@ -104,7 +107,7 @@ const RegisterPage = () => {
             {/* Password field */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative group">
                 <div className={`absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200 ${focusedField === "password" ? "text-emerald-500" : "text-slate-400"}`}>
@@ -117,7 +120,7 @@ const RegisterPage = () => {
                   onFocus={() => setFocusedField("password")}
                   onBlur={() => setFocusedField(null)}
                   className="w-full h-12 pl-12 pr-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
-                  placeholder="•••••••"
+                  placeholder={t('auth.placeholderPassword')}
                 />
               </div>
             </div>
@@ -141,11 +144,11 @@ const RegisterPage = () => {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating account...
+                    {t('auth.loadingCreating')}
                   </>
                 ) : (
                   <>
-                    Create account
+                    {t('auth.createAccount')}
                     <ArrowRight
                       className="w-4 h-4 group-hover: translate-x-1 transition-transform duration-200"
                       strokeWidth={2} />
@@ -159,9 +162,9 @@ const RegisterPage = () => {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-slate-200/60">
             <p className="text-center text-sm text-slate-600">
-              Already have an account?{" "}
+              {t('auth.haveAccount')}{" "}
               <Link to='/login' className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors duration-200">
-                Sign in
+                {t('auth.signIn')}
               </Link>
             </p>
           </div>
@@ -169,11 +172,11 @@ const RegisterPage = () => {
 
         {/* Subtle footer text */}
         <p className="text-center text-xs text-slate-400 mt-6">
-          By continuing, you agree to our Term & Privacy Policy
+          {t('auth.footerPolicy')}
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default RegisterPage;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import documentService from '../../services/documentService';
 import Spinner from '../../components/common/Spinner';
@@ -15,7 +16,9 @@ const DocumentDetailPage = () => {
   const { id } = useParams();
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('Content');
+  const [activeTab, setActiveTab] = useState('content');
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchDocumentDetails = async () => {
@@ -23,7 +26,7 @@ const DocumentDetailPage = () => {
         const data = await documentService.getDocumentById(id);
         setDocument(data);
       } catch (error) {
-        toast.error('Failed to fetch document details.');
+        toast.error(t('documents.errorFetchDetail'));
         console.error(error);
       } finally {
         setLoading(false);
@@ -52,7 +55,7 @@ const DocumentDetailPage = () => {
     }
 
     if (!document || !document.data || !document.data.filePath) {
-      return <div className="text-center p-8">PDF not available.</div>
+      return <div className="text-center p-8">{t('documents.pdfNotAvailable')}</div>
     }
 
     const pdfUrl = getPdfUrl();
@@ -60,7 +63,7 @@ const DocumentDetailPage = () => {
     return (
       <div className="bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm">
         <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-300">
-          <span className="text-sm font-medium text-gray-700">Document Viewer</span>
+          <span className="text-sm font-medium text-gray-700">{t('documents.viewerTitle')}</span>
           <a
             href={pdfUrl}
             target="_blank"
@@ -68,7 +71,7 @@ const DocumentDetailPage = () => {
             className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
           >
             <ExternalLink size={16} />
-            Open in new tab
+            {t('documents.openInNewTab')}
           </a>
         </div>
         <div className="bg-gray-100 p-1">
@@ -103,11 +106,11 @@ const DocumentDetailPage = () => {
   };
 
   const tabs = [
-    { name: 'Content', label: 'Content', content: renderContent() },
-    { name: 'Chat', label: 'Chat', content: renderChat() },
-    { name: 'AI Actions', label: 'AI Actions', content: renderAIActions() },
-    { name: 'Flashcards', label: 'Flashcards', content: renderFlashcardsTab() },
-    { name: 'Quizzes', label: 'Quizzes', content: renderQuizzesTab() },
+    { name: 'content', label: t('documents.tabContent'), content: renderContent() },
+    { name: 'chat', label: t('documents.tabChat'), content: renderChat() },
+    { name: 'aiActions', label: t('documents.tabAIActions'), content: renderAIActions() },
+    { name: 'flashcards', label: t('documents.tabFlashcards'), content: renderFlashcardsTab() },
+    { name: 'quizzes', label: t('documents.tabQuizzes'), content: renderQuizzesTab() },
   ];
 
   if (loading) {
@@ -115,7 +118,7 @@ const DocumentDetailPage = () => {
   }
 
   if (!document) {
-    return <div className="text-center p-8">Document not found.</div>;
+    return <div className="text-center p-8">{t('documents.notFound')}</div>;
   }
 
   return (
@@ -123,13 +126,13 @@ const DocumentDetailPage = () => {
       <div className="mb-4">
         <Link to="/documents" className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
           <ArrowLeft size={16} />
-          Back to Documents
+          {t('documents.backToList')}
         </Link>
       </div>
       <PageHeader title={document.data.title} />
       <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
-  )
-}
+  );
+};
 
-export default DocumentDetailPage
+export default DocumentDetailPage;

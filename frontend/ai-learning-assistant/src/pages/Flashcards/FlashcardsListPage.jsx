@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import flashcardService from '../../services/flashcardService';
 import PageHeader from '../../components/common/PageHeader';
 import Spinner from '../../components/common/Spinner';
@@ -9,17 +10,16 @@ import toast from 'react-hot-toast';
 const FlashcardsListPage = () => {
   const [flashcardSets, setFlashcardSets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchFlashcardSets = async () => {
       try {
         const response = await flashcardService.getAllFlashcardSets();
-
         // console.log("fetchFlashcardSets__", response.data);
-
         setFlashcardSets(response.data);
       } catch (error) {
-        toast.error('Failed to fetch flashcard sets.');
+        toast.error(t('flashcards.errorFetchAll'));
         console.error(error);
       } finally {
         setLoading(false);
@@ -36,8 +36,8 @@ const FlashcardsListPage = () => {
     if (flashcardSets.length === 0) {
       return (
         <EmptyState
-          title="No Flashcard Sets Found"
-          description="You haven't generated any flashcard yet. Go to a document to create your first set."
+          title={t('flashcards.noSetsFound')}
+          description={t('flashcards.emptyStateListDesc')}
         />
       );
     }
@@ -53,7 +53,7 @@ const FlashcardsListPage = () => {
 
   return (
     <div>
-      <PageHeader title="All Flashcard Sets" />
+      <PageHeader title={t('flashcards.allSetsTitle')} />
       {renderContent()}
     </div>
   );

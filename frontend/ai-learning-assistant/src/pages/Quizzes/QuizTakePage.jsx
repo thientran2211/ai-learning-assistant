@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import quizService from '../../services/quizService';
@@ -16,13 +17,15 @@ const QuizTakePage = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
+  const { t } = useTranslation();
+
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
         const response = await quizService.getQuizById(quizId);
         setQuiz(response.data);
       } catch (error) {
-        toast.error('Failed to fetch quiz.');
+        toast.error(t('quizzes.errorFetchQuiz'));
         console.error(error);
       } finally {
         setLoading(false);
@@ -63,10 +66,10 @@ const QuizTakePage = () => {
       });
 
       await quizService.submitQuiz(quizId, formattedAnswers);
-      toast.success('Quiz submitted successfully!');
+      toast.success(t('quizzes.successSubmit'));
       navigate(`/quizzes/${quizId}/results`);
     } catch (error) {
-      toast.error(error.message || 'Failed to submit quiz.');
+      toast.error(error.message || t('quizzes.errorSubmit'));
     } finally {
       setSubmitting(false);
     }
@@ -84,7 +87,7 @@ const QuizTakePage = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <p className="text-slate-600 text-lg">Quiz not found or has no questions.</p>
+          <p className="text-slate-600 text-lg">{t('quizzes.quizNotFound')}</p>
         </div>
       </div>
     );
@@ -96,16 +99,16 @@ const QuizTakePage = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <PageHeader title={quiz.title || 'Take Quiz'} />
+      <PageHeader title={quiz.title || t('quizzes.takeQuiz')} />
 
       {/* Progress bar */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold text-slate-700">
-            Question {currentQuestionIndex + 1} of {quiz.questions.length}
+             {t('quizzes.questionProgress', { current: currentQuestionIndex + 1, total: quiz.questions.length })}
           </span>
           <span className="text-sm font-medium text-slate-500">
-            {answeredCount} answered
+            {t('quizzes.answeredCount', { count: answeredCount })}
           </span>
         </div>
         <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -121,7 +124,7 @@ const QuizTakePage = () => {
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-merald-50 to-teal-50 border border-emerald-200 rounded-xl mb-6">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
           <span className="text-sm font-semibold text-emerald-700">
-            Question {currentQuestionIndex + 1}
+            {t('quizzes.questionBadge', { number: currentQuestionIndex + 1 })}
           </span>
         </div>
 
@@ -189,7 +192,7 @@ const QuizTakePage = () => {
           variant='secondary'
         >
           <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" strokeWidth={2.5} />
-          Previous
+          {t('common.previous')}
         </Button>
 
         {currentQuestionIndex === quiz.questions.length - 1 ? (
@@ -202,12 +205,12 @@ const QuizTakePage = () => {
               {submitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Submitting...
+                  {t('quizzes.submitting')}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
-                  Submit Quiz
+                  {t('quizzes.btnSubmit')}
                 </>
               )}
             </span>
@@ -218,7 +221,7 @@ const QuizTakePage = () => {
             onClick={handleNextQuestion}
             disabled={submitting}
           >
-            Next
+            {t('common.next')}
             <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" strokeWidth={2.5} />
           </Button>
         )}

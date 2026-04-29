@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Send, MessageSquare, Sparkles } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import aiService from '../../services/aiService';
@@ -9,6 +10,7 @@ import MarkdownRenderer from '../common/MarkdownRenderer';
 const ChatInterface = () => {
   const { id: documentId } = useParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [history, setHistory] = useState([]);
   const [message, SetMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ const ChatInterface = () => {
       console.error('Chat error:', error);
       const errorMessage = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: t('chat.error'),
         timestamp: new Date()
       };
       setHistory(prev => [...prev, errorMessage]);
@@ -106,7 +108,7 @@ const ChatInterface = () => {
           <MessageSquare className="w-7 h-7 text-emerald-600" strokeWidth={2} />
         </div>
         <Spinner />
-        <p className="text-sm text-slate-500 mt-3 font-medium">Loading chat history...</p>
+        <p className="text-sm text-slate-500 mt-3 font-medium">{t('chat.loading')}</p>
       </div>
     );
   }
@@ -120,8 +122,8 @@ const ChatInterface = () => {
             <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-100 to-teal-100 flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/10">
               <MessageSquare className="w-8 h-8 text-emerald-600" strokeWidth={2} />
             </div>
-            <h3 className="text-base font-semibold text-slate-900 mb-2">Start a conversation</h3>
-            <p className="text-sm text-slate-500">Ask me anything about the document!</p>
+            <h3 className="text-base font-semibold text-slate-900 mb-2">{t('chat.startTitle')}</h3>
+            <p className="text-sm text-slate-500">{t('chat.startDesc')}</p>
           </div>
         ) : (
           history.map(renderMessage)
@@ -150,7 +152,7 @@ const ChatInterface = () => {
             type="text"
             value={message}
             onChange={(e) => SetMessage(e.target.value)}
-            placeholder="Ask a follow-up question..."
+            placeholder={t('chat.placeholder')}
             className="flex-1 h-12 px-4 border-2 border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder-slate-400 text-sm font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:bg-white focus:shadow-lg focus:shadow-emerald-500/10"
             disabled={loading}
           />

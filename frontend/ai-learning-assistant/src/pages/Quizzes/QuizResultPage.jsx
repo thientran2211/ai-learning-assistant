@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import quizService from '../../services/quizService';
 import PageHeader from '../../components/common/PageHeader';
@@ -8,6 +9,7 @@ import { ArrowLeft, CheckCircle2, XCircle, Trophy, Target, BookOpen, Book } from
 
 const QuizResultPage = () => {
   const { quizId } = useParams();
+  const { t } = useTranslation();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +19,7 @@ const QuizResultPage = () => {
         const data = await quizService.getQuizResults(quizId);
         setResults(data);
       } catch (error) {
-        toast.error('Failed to fetch quiz results.');
+        toast.error(t('quizzes.errorFetchResults'));
         console.error(error);
       } finally {
         setLoading(false);
@@ -39,7 +41,7 @@ const QuizResultPage = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <p className="text-slate-600 text-lg">Quiz results not found.</p>
+          <p className="text-slate-600 text-lg">{t('quizzes.resultsNotFound')}</p>
         </div>
       </div>
     );
@@ -58,11 +60,11 @@ const QuizResultPage = () => {
   };
 
   const getScoreMessage = (score) => {
-    if (score >= 90) return 'Outstanding!';
-    if (score >= 80) return 'Great job!';
-    if (score >= 70) return 'Good work!';
-    if (score >= 60) return 'Not bad!';
-    return 'Keep practicing!';
+    if (score >= 90) return t('quizzes.scoreOutstanding');
+    if (score >= 80) return t('quizzes.scoreGreat');
+    if (score >= 70) return t('quizzes.scoreGood');
+    if (score >= 60) return t('quizzes.scoreNotBad');
+    return t('quizzes.scoreKeepPracticing');
   };
 
   return (
@@ -74,10 +76,11 @@ const QuizResultPage = () => {
           className="group inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors duration-200"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" strokeWidth={2} />
+          {t('quizzes.backToDocument')}
         </Link>
       </div>
 
-      <PageHeader title={`${quiz.title || 'Quiz'} Results`} />
+      <PageHeader title={t('quizzes.resultsTitle', { title: quiz.title || t('quizzes.quizTitle') })} />
 
       {/* Score card */}
       <div className="bg-white/80 backdrop-blur-xl border-2 border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-8 mb-8">
@@ -88,7 +91,7 @@ const QuizResultPage = () => {
 
           <div>
             <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-2">
-              Your Score
+              {t('quizzes.yourScore')}
             </p>
             <div className={`inline-block text-5xl font-bold bg-linear-to-r ${getScoreColor(score)} bg-clip-text text-transparent mb-2`}>
               {score}%
@@ -103,19 +106,19 @@ const QuizResultPage = () => {
             <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl">
               <Target className="w-4 h-4 text-slate-600" strokeWidth={2} />
               <span className="text-sm font-semibold text-slate-700">
-                {totalQuestions} total
+                {totalQuestions} {t('quizzes.total')}
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" strokeWidth={2} />
               <span className="text-sm font-semibold text-emerald-700">
-                {correctAnswers} correct
+                {correctAnswers} {t('quizzes.correct')}
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-rose-50 border border-rose-200 rounded-xl">
               <XCircle className="w-4 h-4 text-rose-600" strokeWidth={2} />
               <span className="text-sm font-semibold text-rose-700">
-                {incorrectAnswers} incorrect
+                {incorrectAnswers} {t('quizzes.incorrect')}
               </span>
             </div>
           </div>
@@ -126,7 +129,7 @@ const QuizResultPage = () => {
       <div className="space-y-6">
         <div className="flex items-center gap-3 mb-2">
           <BookOpen className="w-5 h-5 text-slate-600" strokeWidth={2} />
-          <h3 className="text-lg font-semibold text-slate-900">Detailed Review</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{t('quizzes.detailedReview')}</h3>
         </div>
 
         {detailedResults.map((result, index) => {
@@ -145,7 +148,7 @@ const QuizResultPage = () => {
                 <div className="flex-1">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg mb-3">
                     <span className="text-xs font-semibold text-slate-600">
-                      Question {index + 1}
+                      {t('quizzes.questionBadge', { number: index + 1 })}
                     </span>
                   </div>
                   <h4 className="text-base font-semibold text-slate-900 leading-relaxed">
@@ -193,13 +196,13 @@ const QuizResultPage = () => {
                           {isCorrectOption && (
                             <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 border border-emerald-300 rounded-lg text-xs font-semibold text-emerald-700">
                               <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
-                              Correct
+                              {t('quizzes.correctLabel')}
                             </span>
                           )}
                           {isWrongAnswer && (
                             <span className="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 border border-rose-300 rounded-lg text-xs font-semibold text-rose-700">
                               <XCircle className="w-3 h-3" strokeWidth={2.5} />
-                              Your Answer
+                              {t('quizzes.yourAnswer')}
                             </span>
                           )}
                         </div>
@@ -218,7 +221,7 @@ const QuizResultPage = () => {
                     </div>
                     <div className="flex-1">
                       <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">
-                        Explanation
+                        {t('quizzes.explanation')}
                       </p>
                       <p className="text-sm text-slate-700 leading-relaxed">
                         {result.explanation}
@@ -238,7 +241,7 @@ const QuizResultPage = () => {
           <button className="group relative px-8 h-12 bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold text-sm rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/25 active:scale-95 overflow-hidden">
             <span className="relative z-10 flex items-center gap-2">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" strokeWidth={2.5} />
-              Return to Document
+              {t('quizzes.btnReturn')}
             </span>
             <div className="absolute inset-0 bg-linear-to-r to-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform transition-700" />
           </button>

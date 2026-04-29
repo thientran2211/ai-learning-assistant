@@ -1,10 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDateFormat } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Sparkles, TrendingUp } from 'lucide-react';
-import moment from 'moment';
 
 const FlashcardSetCard = ({ flashcardSet }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { formatRelativeTime } = useDateFormat();
 
   const handleStudyNow = () => {
     navigate(`/documents/${flashcardSet.documentId._id}/flashcards`);
@@ -31,7 +34,7 @@ const FlashcardSetCard = ({ flashcardSet }) => {
                 {flashcardSet?.documentId?.title}
               </h3>
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-                Created {moment(flashcardSet.createdAt).fromNow()}
+                {t('flashcards.created')} {formatRelativeTime(flashcardSet.createdAt)}
               </p>
             </div>
           </div>
@@ -40,7 +43,8 @@ const FlashcardSetCard = ({ flashcardSet }) => {
           <div className="flex items-center gap-3 pt-2">
             <div className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
               <span className="text-sm font-semibold text-slate-700">
-                {totalCards} {totalCards === 1 ? 'Card' : 'Cards'}
+                {totalCards}{" "} 
+                {totalCards === 1 ? t('flashcards.cardSingular') : t('flashcards.cardPlural')}
               </span>
             </div>
             {reviewedCount > 0 && (
@@ -58,10 +62,10 @@ const FlashcardSetCard = ({ flashcardSet }) => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-600">
-                  Progress
+                  {t('flashcards.progress')}
                 </span>
                 <span className="text-xs font-semibold text-slate-700">
-                  {reviewedCount}/{totalCards} reviewed
+                  {reviewedCount}/{totalCards} {t('flashcards.reviewed')}
                 </span>
               </div>
               <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -85,7 +89,7 @@ const FlashcardSetCard = ({ flashcardSet }) => {
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
               <Sparkles className="w-4 h-4" strokeWidth={2.5} />
-              Study Now
+               {t('flashcards.btnStudyNow')}
             </span>
             <div className="absolute inset-0 bg-linear-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
           </button>

@@ -1,9 +1,19 @@
 import axiosInstance from "../utils/axiosinstance";
 import { API_PATHS } from "../utils/apiPaths";
 
+const getLanguage = () => {
+  return localStorage.getItem('preferredLanguage') ||
+          navigator.language?.split('-')[0] ||
+          'en';
+};
+
 const generateFlashcards = async (documentId, options) => {
   try {
-    const response = await axiosInstance.post(API_PATHS.AI.GENERATE_FLASHCARDS, { documentId, ...options });
+    const response = await axiosInstance.post(API_PATHS.AI.GENERATE_FLASHCARDS, { 
+      documentId, 
+      ...options,
+      language: getLanguage()
+    });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to generate flashcards' };
@@ -12,7 +22,11 @@ const generateFlashcards = async (documentId, options) => {
 
 const generateQuiz = async (documentId, options) => {
   try {
-    const response = await axiosInstance.post(API_PATHS.AI.GENERATE_QUIZ, { documentId, ...options });
+    const response = await axiosInstance.post(API_PATHS.AI.GENERATE_QUIZ, { 
+      documentId, 
+      ...options,
+      language: getLanguage()
+    });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to generate quiz' };
@@ -21,7 +35,10 @@ const generateQuiz = async (documentId, options) => {
 
 const generateSummary = async (documentId) => {
   try {
-    const response = await axiosInstance.post(API_PATHS.AI.GENERATE_SUMMARY, { documentId });
+    const response = await axiosInstance.post(API_PATHS.AI.GENERATE_SUMMARY, { 
+      documentId,
+      language: getLanguage()
+    });
     return response.data?.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to generate summary' };
@@ -30,7 +47,11 @@ const generateSummary = async (documentId) => {
 
 const chat = async (documentId, message) => {
   try {
-    const response = await axiosInstance.post(API_PATHS.AI.CHAT, { documentId, question: message }); // remove history from payload
+    const response = await axiosInstance.post(API_PATHS.AI.CHAT, { 
+      documentId, 
+      question: message,
+      language: getLanguage()
+    });
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Chat request failed' };
@@ -39,7 +60,11 @@ const chat = async (documentId, message) => {
 
 const explainConcept = async (documentId, concept) => {
   try {
-    const response = await axiosInstance.post(API_PATHS.AI.EXPLAIN_CONCEPT, { documentId, concept });
+    const response = await axiosInstance.post(API_PATHS.AI.EXPLAIN_CONCEPT, { 
+      documentId,
+      concept,
+      language: getLanguage()
+    });
     return response.data?.data;
   } catch (error) {
     throw error.response?.data || { message: 'Failed to explain concept' };

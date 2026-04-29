@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Star, RotateCcw } from 'lucide-react';
 
 const Flashcard = ({ flashcard, onToggleStar }) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const { t } = useTranslation();
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -56,7 +58,7 @@ const Flashcard = ({ flashcard, onToggleStar }) => {
         {/* Flip indicator */}
         <div className="flex items-center justify-center gap-2 text-xs text-slate-400 font-medium">
           <RotateCcw className="w-3.5 h-3.5" strokeWidth={2} />
-          <span>Click to reveal answer</span>
+          <span>{t('flashcards.flipToAnswer')}</span>
         </div>
       </div>
 
@@ -99,7 +101,7 @@ const Flashcard = ({ flashcard, onToggleStar }) => {
         {/* Flip indicator */}
         <div className="flex items-center justify-center gap-2 text-xs text-white/70 font-medium">
           <RotateCcw className="w-3.5 h-3.5" strokeWidth={2} />
-          <span>Click to see question</span>
+          <span>{t('flashcards.flipToQuestion')}</span>
         </div>
       </div>
     </div>

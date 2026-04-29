@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDateFormat } from '../../utils/dateFormatter';
 import Spinner from '../../components/common/Spinner';
 import progressService from '../../services/progressService';
 import toast from 'react-hot-toast';
@@ -8,16 +10,17 @@ const DashboardPage = () => {
 
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+  const { formatDate: formatDateUtil } = useDateFormat();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const data = await progressService.getDashboardData();
-        console.log("Data__getDashboardData", data);
-
+        //console.log("Data__getDashboardData", data);
         setDashboardData(data.data);
       } catch (error) {
-        toast.error("Failed to fetch dashboard data.");
+        toast.error(t('dashboard.errorFetch') || "Failed to fetch dashboard data.");
         console.error(error);
       } finally {
         setLoading(false);
@@ -37,7 +40,7 @@ const DashboardPage = () => {
           <div className="">
             <TrendingUp className="w-8 h-8 text-slate-400" />
           </div>
-          <p className="text-slate-600 text-sm">No dashboard data available.</p>
+          <p className="text-slate-600 text-sm">{t('dashboard.noData')}</p>
         </div>
       </div>
     );
@@ -45,21 +48,21 @@ const DashboardPage = () => {
 
   const stats = [
     {
-      label: 'Total Documents',
+      label: t('dashboard.totalDocuments'),
       value: dashboardData.overview.totalDocuments,
       icon: FileText,
       gradient: 'from-blue-400 to-cyan-500',
       shadowColor: 'shadow-blue-500/25'
     },
     {
-      label: 'Total Flashcards',
+      label: t('dashboard.totalFlashcards'),
       value: dashboardData.overview.totalFlashcards,
       icon: BookOpen,
       gradient: 'from-purple-400 to-pink-500',
       shadowColor: 'shadow-purple-500/25'
     },
     {
-      label: 'Total Quizzes',
+      label: t('dashboard.totalQuizzes'),
       value: dashboardData.overview.totalQuizzes,
       icon: BrainCircuit,
       gradient: 'from-emerald-400 to-teal-500',
@@ -75,10 +78,10 @@ const DashboardPage = () => {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-medium text-slate-900 tracking-tight mb-2">
-            Dashboard
+            {t('dashboard.title')}
           </h1>
           <p className="text-slate-500 text-sm">
-            Track your learning progress and activity
+            {t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -111,7 +114,7 @@ const DashboardPage = () => {
               <Clock className="w-5 h-5 text-slate-600" strokeWidth={2} />
             </div>
             <h3 className="text-xl font-medium text-slate-900 tracking-tight">
-              Recent Activity
+              {t('dashboard.recentActivity')}
             </h3>
           </div>
 
@@ -133,7 +136,7 @@ const DashboardPage = () => {
                   type: 'quiz'
                 }))
               ]
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
                 .map((activity, index) => (
                   <div
                     key={activity.id || index}
@@ -146,12 +149,12 @@ const DashboardPage = () => {
                           : 'bg-linear-to-r from-emerald-400 to-teal-500'
                           }`} />
                         <p className="text-sm font-medium text-slate-900 truncate">
-                          {activity.type === 'document' ? 'Accessed Document: ' : 'Attempted Quiz: '}
+                          {activity.type === 'document' ? t('dashboard.activity.accessedDoc') : t('dashboard.activity.attemptedQuiz')}
                           <span className="text-slate-700">{activity.description}</span>
                         </p>
                       </div>
                       <p className="text-xs text-slate-500 pl-4">
-                        {new Date(activity.timestamp).toLocaleString()}
+                        {formatDateUtil(activity.timestamp)}
                       </p>
                     </div>
                     {activity.link && (
@@ -159,7 +162,7 @@ const DashboardPage = () => {
                         href={activity.link}
                         className="ml-4 px-4 py-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all duration-200 whitespace-nowrap"
                       >
-                        View
+                        {t('common.view')}
                       </a>
                     )}
                   </div>
@@ -170,14 +173,14 @@ const DashboardPage = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 mb-4">
                 <Clock className="w-8 h-8 text-slate-400" />
               </div>
-              <p className="text-sm text-slate-600">No recent activity yet.</p>
-              <p className="text-xs text-slate-500 mt-1">Start learning to see your progress here</p>
+              <p className="text-sm text-slate-600">{t('dashboard.noActivity')}</p>
+              <p className="text-xs text-slate-500 mt-1">{t('dashboard.startLearning')}</p>
             </div>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default DashboardPage
+export default DashboardPage;

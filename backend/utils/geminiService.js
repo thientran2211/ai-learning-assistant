@@ -11,13 +11,28 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 /**
+ * Helper function to get language instruction
+ * @param {string} language - 'en' or 'vi'
+ * @returns {string} Language instruction for prompt
+ */
+const getLanguageInstruction = (language = 'en') => {
+  return language === 'vi'
+    ? '\n\nIMPORTANT: Respond entirely in Vietnamese. Use clear, natural Vietnamese language that is easy to understand.'
+    : '\n\nIMPORTANT: Respond entirely in English. Use clear, natural English.';
+};
+
+/**
  * Generate flashcards from text
  * @param {string} text - Document text
  * @param {number} count - Number of flashcards to generate
+ * @param {string} language - 'en' or 'vi'
  * @returns {Promise<Array<{question: string, answer: string, difficulty: string}>>}
  */
-export const generateFlashcards = async (text, count = 10) => {
-  const prompt = `Generate exactly ${count} educational flashcards from the following text.
+export const generateFlashcards = async (text, count = 5, language = 'en') => {
+  const languageInstruction = getLanguageInstruction(language);
+
+  const prompt = `Generate exactly ${count} educational flashcards from the following text.${languageInstruction}
+
   Format each flashcard as:
   Q: [Clear, specific question]
   A: [Concise, accurate answer]
@@ -26,7 +41,7 @@ export const generateFlashcards = async (text, count = 10) => {
   Separate each flashcard with "---"
   
   Text:
-  ${text.substring(0, 15000)}`;
+  ${text.substring(0, 10000)}`;
 
   try {
     const response = await ai.models.generateContent({
@@ -73,10 +88,14 @@ export const generateFlashcards = async (text, count = 10) => {
  * Generate quiz question
  * @param {string} text - Document text
  * @param {number} numQuestions - Number of questions
+ * @param {string} language - 'en' or 'vi'
  * @returns {Promise<Array<{question: string, options: Array, correctAnswer: string, explanation: string, difficulty: string}>>}
  */
-export const generateQuiz = async (text, numQuestions = 5) => {
-  const prompt = `Generate exactly ${numQuestions} multiple choice questions from the following text.
+export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
+  const languageInstruction = getLanguageInstruction(language);
+
+  const prompt = `Generate exactly ${numQuestions} multiple choice questions from the following text.${languageInstruction}
+
   Format each question as:
   Q: [Question]
   O1: [Option 1]
@@ -140,10 +159,13 @@ export const generateQuiz = async (text, numQuestions = 5) => {
 /**
  * Generate document summary
  * @param {string} text - document text
+ * @param {string} language - 'en' or 'vi'
  * @returns {Promise<string>}
  */
-export const generateSummary = async (text) => {
-  const prompt = `Provide a concise summary of the following text, highlighting the key concepts, main ideas, and important points. Keep the summary clear and structured.
+export const generateSummary = async (text, language = 'en') => {
+  const languageInstruction = getLanguageInstruction(language);
+
+  const prompt = `Provide a concise summary of the following text, highlighting the key concepts, main ideas, and important points. Keep the summary clear and structured.${languageInstruction}
   
   Text:
   ${text.substring(0, 20000)}`;
@@ -165,12 +187,14 @@ export const generateSummary = async (text) => {
  * Chat with document context
  * @param {string} question - User question
  * @param {Array<Object>} chunks - Relevant document chunks
+ * @param {string} language - 'en' or 'vi'
  * @returns {Promise<string>}
  */
-export const chatWithContext = async (question, chunks) => {
+export const chatWithContext = async (question, chunks, language = 'en') => {
   const context = chunks.map((c, i) => `[Chunk ${i + 1}]\n${c.content}`).join('\n\n');
+  const languageInstruction = getLanguageInstruction(language);
 
-  const prompt = `Based on the following context from a document, analyze the context and answer the user's question. If the answer is not in the context, say so.
+  const prompt = `Based on the following context from a document, analyze the context and answer the user's question. If the answer is not in the context, say so.${languageInstruction}
   
   Context:
   ${context}
@@ -196,11 +220,14 @@ export const chatWithContext = async (question, chunks) => {
  * Explain a specific concept
  * @param {string} concept - concept to explain
  * @param {string} context - relevant context
+ * @param {string} language - 'en' or 'vi'
  * @returns {Promise<string>}
  */
-export const explainConcept = async (concept, context) => {
+export const explainConcept = async (concept, context, language = 'en') => {
+  const languageInstruction = getLanguageInstruction(language);
+
   const prompt = `Explain the concept of "${concept}" based on the following context. 
-  Provide a clear, educational explanation that's easy to understand. Include examples if relevant.
+  Provide a clear, educational explanation that's easy to understand. Include examples if relevant.${languageInstruction}
   
   Context:
   ${context.substring(0, 10000)}`;

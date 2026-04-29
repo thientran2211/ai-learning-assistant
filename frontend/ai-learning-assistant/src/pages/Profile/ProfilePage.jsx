@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import PageHeader from '../../components/common/PageHeader';
 import Button from '../../components/common/Button';
 import Spinner from '../../components/common/Spinner';
@@ -16,6 +17,7 @@ const ProfilePage = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -24,7 +26,7 @@ const ProfilePage = () => {
         setUsername(data.username);
         setEmail(data.email);
       } catch (error) {
-        toast.error("Failed to fetch profile data.");
+        toast.error(t('profile.errorFetch'));
         console.error(error);
       } finally {
         setLoading(false);
@@ -36,21 +38,21 @@ const ProfilePage = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmNewPassword) {
-      toast.error("New passwords do not match.");
+      toast.error(t('profile.passwordMismatch'));
       return;
     }
     if (newPassword.length < 6) {
-      toast.error("New password must be at least 6 characters long.");
+      toast.error(t('profile.passwordLength'));
     }
     setPasswordLoading(true);
     try {
       await authService.changePassword({ currentPassword, newPassword });
-      toast.success("Password changed successfully!");
+      toast.success(t('profile.successChangePassword'));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
     } catch (error) {
-      toast.error(error.message || "Failed to change password.");
+      toast.error(error.message || t('profile.errorChangePassword'));
     } finally {
       setPasswordLoading(false);
     }
@@ -62,18 +64,18 @@ const ProfilePage = () => {
 
   return (
     <div>
-      <PageHeader title="Profile Settings" />
+      <PageHeader title={t('profile.title')} />
 
       <div className="space-y-8">
         {/* User information display */}
         <div className="bg-white border border-neutral-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-            User Information
+            {t('profile.userInfo')}
           </h3>
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-neutral-700 mb-1.5">
-                Username
+                {t('profile.username')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -86,7 +88,7 @@ const ProfilePage = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-neutral-700 mb-1.5">
-                Email Address
+                {t('profile.email')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -103,12 +105,12 @@ const ProfilePage = () => {
         {/* Change password form */}
         <div className="bg-white border border-neutral-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-            Change Password
+            {t('profile.changePassword')}
           </h3>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-neutral-700 mb-1.5">
-                Current Password
+                {t('profile.currentPassword')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -125,7 +127,7 @@ const ProfilePage = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-neutral-700 mb-1.5">
-                New Password
+                {t('profile.newPassword')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -142,7 +144,7 @@ const ProfilePage = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-neutral-700 mb-1.5">
-                Confirm New Password
+                {t('profile.confirmPassword')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -159,7 +161,7 @@ const ProfilePage = () => {
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={passwordLoading}>
-                {passwordLoading ? "Changing..." : "Change Password"}
+                {passwordLoading ? t('profile.changing') : t('profile.btnChangePassword')}
               </Button>
             </div>
           </form>
