@@ -31,7 +31,7 @@ axiosInstance.interceptors.request.use(
       delete config.headers.Authorization;
     } 
     else {
-      console.warn('⚠️ No valid auth, generating new guest session...');
+      console.warn('No valid auth, generating new guest session...');
       
       // Generate new UUID
       if (typeof crypto !== 'undefined' && crypto.randomUUID) {
