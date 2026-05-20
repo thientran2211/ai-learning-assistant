@@ -54,7 +54,7 @@ export const generateFlashcards = async (req, res, next) => {
 // @access  Private
 export const generateQuiz = async (req, res, next) => {
   try {
-    const { documentId, numQuestions = 5, title, language = 'en' } = req.body;
+    const { documentId, numQuestions = 5, title, language = 'en', barrettLevel = 'all' } = req.body;
 
     if (!documentId) {
       return res.status(400).json({ success: false, error: 'Please provide documentId', statusCode: 400 });
@@ -70,7 +70,8 @@ export const generateQuiz = async (req, res, next) => {
       'generateQuiz',
       document.extractedText,
       parseInt(numQuestions),
-      language
+      language,
+      barrettLevel
     );
 
     const quiz = await Quiz.create({
@@ -80,10 +81,20 @@ export const generateQuiz = async (req, res, next) => {
       questions: questions,
       totalQuestions: questions.length,
       userAnswers: [],
-      score: 0
+      score: 0,
+      levelScores: {
+        literal: 0,
+        inferential: 0,
+        evaluative: 0
+      }
     });
 
-    res.status(201).json({ success: true, data: quiz, message: 'Quiz generated successfully' });
+    res.status(201).json({ 
+      success: true, 
+      data: quiz, 
+      message: 'Quiz generated successfully',
+      barrettLevel: barrettLevel
+    });
   } catch (error) {
     next(error);
   }

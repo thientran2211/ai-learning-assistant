@@ -89,31 +89,44 @@ export const generateFlashcards = async (text, count = 5, language = 'en') => {
 /**
  * Generate quiz using Groq/Llama 3
  */
-export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
+export const generateQuiz = async (text, numQuestions = 5, language = 'en', barrettLevel = 'all') => {
   const languageInstruction = getLanguageInstruction(language);
 
-  const prompt = `Generate exactly ${numQuestions} multiple choice questions from the following text.${languageInstruction}
-  
-  Format each question as:
+  const barrettLevels = {
+    literal: 'LITERAL: Answer directly stated in text',
+    inferential: 'INFERENTIAL: Requires reading between lines',
+    evaluative: 'EVALUATIVE: Requires judgment/assessment'
+  };
+
+  const levelInstruction = barrettLevel !== 'all'
+    ? `Focus ONLY on ${barrettLevel.toUpperCase()} questions. ${barrettLevels[barrettLevel]}`
+    : `Generate mix of levels: ${Object.values(barrettLevels).join(' | ')}`;
+
+  const prompt = `Generate exactly ${numQuestions} multiple choice questions based on Barrett's Taxonomy.${languageInstruction}
+
+  ${levelInstruction}
+
+  IMPORTANT: For "C:" field, copy the EXACT FULL TEXT of the correct option, NOT index/number.
+  CORRECT: C: ReactJS là framework JavaScript
+  WRONG: C: 01 or C: A
+
+  Format:
   Q: [Question]
-  O1: [Option 1]
-  O2: [Option 2]
-  O3: [Option 3]
-  O4: [Option 4]
-  C: [Correct option - exactly as written above]
-  E: [Brief explanation]
-  D: [Difficulty: easy, medium, or hard]
-  
-  Separate questions with "---"
-  
-  Text:
-  ${text.substring(0, 8000)}`;
+  O1-O4: [Options with full text]
+  C: [CORRECT ANSWER - EXACT FULL TEXT from options above]
+  E: [Explanation]
+  D: [easy|medium|hard]
+  L: [literal|inferential|evaluative]
+
+  Separate with "---"
+
+  Text: ${text.substring(0, 8000)}`;  
 
   try {
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [
-        { role: "system", content: "You are an expert quiz creator. Generate clear, accurate multiple choice questions." },
+        { role: "system", content: "You are an expert quiz creator. Output structured questions with FULL TEXT answers." },
         { role: "user", content: prompt }
       ],
       temperature: 0.3,
@@ -121,13 +134,12 @@ export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
     });
 
     const generatedText = completion.choices[0]?.message?.content || "";
-
     const questions = [];
     const questionBlocks = generatedText.split('---').filter(q => q.trim());
 
     for (const block of questionBlocks) {
       const lines = block.trim().split('\n');
-      let question = '', options = [], correctAnswer = '', explanation = '', difficulty = 'medium';
+      let question = '', options = [], correctAnswer = '', explanation = '', difficulty = 'medium', qBarrettLevel = 'literal';
 
       for (const line of lines) {
         const trimmed = line.trim();
@@ -139,17 +151,24 @@ export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
           const diff = trimmed.substring(2).trim().toLowerCase();
           if (['easy', 'medium', 'hard'].includes(diff)) difficulty = diff;
         }
+        else if (trimmed.startsWith('L:')) {
+          const level = trimmed.substring(2).trim().toLowerCase();
+          if (['literal', 'inferential', 'evaluative'].includes(level)) qBarrettLevel = level;
+        }
       }
 
       if (question && options.length === 4 && correctAnswer) {
-        questions.push({ question, options, correctAnswer, explanation, difficulty });
+        questions.push({ question, options, correctAnswer, explanation, difficulty, barrettLevel: qBarrettLevel });
       }
     }
 
     return questions.slice(0, numQuestions);
   } catch (error) {
     console.error('Groq API error:', error);
-    throw new Error('Failed to generate quiz via Groq');
+    const enhancedError = new Error('Failed to generate quiz via Groq');
+    enhancedError.originalError = error;
+    enhancedError.status = error.status || error.response?.status;
+    throw enhancedError;
   }
 };
 

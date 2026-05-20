@@ -5,7 +5,7 @@ import quizService from '../../services/quizService';
 import PageHeader from '../../components/common/PageHeader';
 import Spinner from '../../components/common/Spinner';
 import toast from 'react-hot-toast';
-import { ArrowLeft, CheckCircle2, XCircle, Trophy, Target, BookOpen, Book } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Trophy, Target, BookOpen, Book, BarChart3 } from 'lucide-react';
 
 const QuizResultPage = () => {
   const { quizId } = useParams();
@@ -125,6 +125,60 @@ const QuizResultPage = () => {
         </div>
       </div>
 
+      {/* Reading profile dashboard */}
+      {quiz.levelScores && (
+      <div className="bg-white/80 backdrop-blur-xl border-2 border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-6 mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <BarChart3 className="w-5 h-5 text-slate-600" strokeWidth={2} />
+          <h3 className="text-lg font-semibold text-slate-900">{t('quizzes.readingProfile')}</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { level: 'literal', label: t('quizzes.levelLiteral') || 'Mức 1: Nhớ', color: 'blue', icon: Book },
+            { level: 'inferential', label: t('quizzes.levelInferential') || 'Mức 3: Suy luận', color: 'purple', icon: Lightbulb },
+            { level: 'evaluative', label: t('quizzes.levelEvaluative') || 'Mức 5: Đánh giá', color: 'amber', icon: Target }
+          ].map(({ level, label, color, icon: Icon }) => {
+            const score = quiz.levelScores[level] || 0;
+            return (
+              <div key={level} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Icon className={`w-4 h-4 text-${color}-600`} strokeWidth={2} />
+                    <span className="text-sm font-medium text-slate-700">{label}</span>
+                  </div>
+                  <span className={`text-lg font-bold text-${color}-600`}>{score}%</span>
+                </div>
+                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full bg-${color}-500 rounded-full transition-all duration-500`}
+                    style={{ width: `${score}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Recommendation */}
+        {(() => {
+          const scores = quiz.levelScores;
+          const weakest = Object.entries(scores).sort((a, b) => a[1] - b[1])[0];
+          if (weakest && weakest[1] < 70) {
+            const labels = { literal: 'Mức 1: Nhớ', inferential: 'Mức 3: Suy luận', evaluative: 'Mức 5: Đánh giá' };
+            return (
+              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">
+                  💡 <strong>{t('quizzes.recommendation')}</strong> {t('quizzes.focusOn')}: <span className="font-semibold">{labels[weakest[0]]}</span> ({weakest[1]}%)
+                </p>
+              </div>
+            );
+          }
+          return null;
+        })()}
+      </div>
+    )}
+
       {/* Questions review */}
       <div className="space-y-6">
         <div className="flex items-center gap-3 mb-2">
@@ -167,42 +221,63 @@ const QuizResultPage = () => {
                 </div>
               </div>
 
+              {/* Options Review */}
               <div className="space-y-3 mb-4">
                 {result.options.map((option, optIndex) => {
-                  const isCorrectOption = optIndex === correctAnswerIndex;
-                  const isUserAnswer = optIndex === userAnswerIndex;
-                  const isWrongAnswer = isUserAnswer && !isCorrect;
+                  let correctIndex = -1;
+  
+                  if (result.correctAnswer) {
+                    const correctStr = result.correctAnswer.toString().trim();
+                    
+                    if (correctStr.startsWith('0') && correctStr.match(/^0\d+$/)) {
+                      correctIndex = parseInt(correctStr.substring(1)) - 1;
+                    }
+                    else if (correctStr.match(/^\d+$/)) {
+                      correctIndex = parseInt(correctStr) - 1;
+                    }
+                    else {
+                      const foundIndex = result.options.findIndex(opt => 
+                        opt?.trim()?.toLowerCase() === correctStr?.trim()?.toLowerCase()
+                      );
+                      if (foundIndex !== -1) correctIndex = foundIndex;
+                    }
+                  }
+                  
+                  const isCorrectOption = optIndex === correctIndex;
+                  const isUserAnswer = option === result.selectedAnswer;
+                  const isWrongSelection = isUserAnswer && !result.isCorrect;
 
                   return (
                     <div
                       key={optIndex}
-                      className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${isCorrectOption
-                        ? 'bg-emerald-50 border-emerald-300 shadow-lg shadow-emerald-500/10'
-                        : isWrongAnswer
+                      className={`relative px-4 py-3 rounded-lg border-2 transition-all duration-200 ${
+                        isCorrectOption
+                          ? 'bg-emerald-50 border-emerald-300 shadow-md shadow-emerald-500/10'
+                          : isWrongSelection
                           ? 'bg-rose-50 border-rose-300'
                           : 'bg-slate-50 border-slate-200'
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span className={`text-sm font-medium ${isCorrectOption
-                          ? 'text-emerald-900'
-                          : isWrongAnswer
-                            ? 'text-rose-900'
-                            : 'text-slate-700'
-                          }`}>
+                        <span className={`text-sm font-medium ${
+                          isCorrectOption ? 'text-emerald-900' : isWrongSelection ? 'text-rose-900' : 'text-slate-700'
+                        }`}>
                           {option}
                         </span>
-                        <div className="flex items-center gap-2">
+                        
+                        {/* Badges */}
+                        <div className="flex items-center gap-2 shrink-0">
                           {isCorrectOption && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 border border-emerald-300 rounded-lg text-xs font-semibold text-emerald-700">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 border border-emerald-300 rounded-lg text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
                               <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
-                              {t('quizzes.correctLabel')}
+                              Đáp án đúng
                             </span>
                           )}
-                          {isWrongAnswer && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 border border-rose-300 rounded-lg text-xs font-semibold text-rose-700">
+                          
+                          {isWrongSelection && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 border border-rose-300 rounded-lg text-[10px] font-bold text-rose-700 uppercase tracking-wide">
                               <XCircle className="w-3 h-3" strokeWidth={2.5} />
-                              {t('quizzes.yourAnswer')}
+                              Của bạn
                             </span>
                           )}
                         </div>

@@ -11,7 +11,7 @@ import {
   Zap, 
   Lock, 
   BookOpen, 
-  BrainCircuit 
+  BrainCircuit
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
 import Tabs from '../../components/common/Tabs';
@@ -77,7 +77,6 @@ const DocumentDetailPage = () => {
       </div>
     );
   }
-
   const getPdfUrl = () => {
     if (!document?.filePath) return null;
 
@@ -233,10 +232,10 @@ const DocumentDetailPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       
-      {/* MAIN CONTAINER */}
+      {/* Main container */}
       <div className="page-container">
         
-        {/* BACK BUTTON + LANGUAGE TOGGLE */}
+        {/* Back button + language toggle */}
         <div className="flex items-center justify-between mb-4 mt-2">
           <Link to="/documents" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -246,7 +245,6 @@ const DocumentDetailPage = () => {
           <LanguageToggle />
         </div>
         
-        {/* PAGE HEADER */}
         <PageHeader title={document?.title || 'Document Details'} className="mb-6">
           {isGuest && (
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 rounded-full">
@@ -279,6 +277,7 @@ const DocumentDetailPage = () => {
         onClose={() => setShowUpgradeModal(false)}
         featureName={upgradeFeature}
       />
+      
     </div>
   );
 };

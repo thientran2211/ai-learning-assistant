@@ -91,23 +91,43 @@ export const generateFlashcards = async (text, count = 5, language = 'en') => {
  * @param {string} language - 'en' or 'vi'
  * @returns {Promise<Array<{question: string, options: Array, correctAnswer: string, explanation: string, difficulty: string}>>}
  */
-export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
+export const generateQuiz = async (text, numQuestions = 5, language = 'en', barrettLevel = 'all') => {
   const languageInstruction = getLanguageInstruction(language);
 
-  const prompt = `Generate exactly ${numQuestions} multiple choice questions from the following text.${languageInstruction}
+  const barrettLevels = {
+    literal: 'LITERAL: Questions where the answer is directly stated in the text (fact recall)',
+    inferential: 'INFERENTIAL: Questions requiring reading between the lines (implications, cause-effect, predictions)',
+    evaluative: 'EVALUATIVE: Questions requiring judgment (assessing bias, logic quality, evidence strength)'
+  };
+
+  const levelInstruction = barrettLevel !== 'all' 
+    ? `Focus ONLY on ${barrettLevel.toUpperCase()} level questions.\n${barrettLevels[barrettLevel]}`
+    : `Generate a mix of questions across different Barrett levels:\n- ${Object.values(barrettLevels).join('\n- ')}`;
+
+  const prompt = `Generate exactly ${numQuestions} multiple choice questions based on Barrett's Taxonomy.${languageInstruction}
+
+  ${levelInstruction}
+
+  IMPORTANT FORMAT RULES:
+  - For "C:" (Correct Answer): You MUST copy the EXACT FULL TEXT of the correct option, NOT the index/number.
+    CORRECT: C: ReactJS là một JavaScript framework
+    WRONG: C: 01 or C: A
+    
+  - For options: Use format "O1: text", "O2: text", etc.
 
   Format each question as:
-  Q: [Question]
-  O1: [Option 1]
-  O2: [Option 2]
-  O3: [Option 3]
-  O4: [Option 4]
-  C: [Correct option - exactly as written above]
+  Q: [Question text]
+  O1: [First option - full text]
+  O2: [Second option - full text]
+  O3: [Third option - full text]
+  O4: [Fourth option - full text]
+  C: [CORRECT ANSWER - MUST BE THE EXACT FULL TEXT FROM O1/O2/O3/O4 ABOVE]
   E: [Brief explanation]
-  D: [Difficulty: easy, medium, or hard]
-  
+  D: [easy|medium|hard]
+  L: [literal|inferential|evaluative]
+
   Separate questions with "---"
-  
+
   Text:
   ${text.substring(0, 15000)}`;
 
@@ -115,6 +135,9 @@ export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-lite",
       contents: prompt,
+      generationConfig: {
+        temperature: 0.3
+      }
     });
 
     const generatedText = response.text;
@@ -124,7 +147,7 @@ export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
 
     for (const block of questionBlocks) {
       const lines = block.trim().split('\n');
-      let question = '', options = [], correctAnswer = '', explanation = '', difficulty = 'medium';
+      let question = '', options = [], correctAnswer = '', explanation = '', difficulty = 'medium', barrettLevel = 'literal';
 
       for (const line of lines) {
         const trimmed = line.trim();
@@ -141,18 +164,40 @@ export const generateQuiz = async (text, numQuestions = 5, language = 'en') => {
           if (['easy', 'medium', 'hard'].includes(diff)) {
             difficulty = diff;
           }
+        } else if (trimmed.startsWith('L:')) {
+          const level = trimmed.substring(2).trim().toLowerCase();
+          if (['literal', 'inferential', 'evaluative'].includes(level)) {
+            barrettLevel = level;
+          }
         }
       }
 
       if (question && options.length === 4 && correctAnswer) {
-        questions.push({ question, options, correctAnswer, explanation, difficulty });
+        questions.push({ 
+          question, 
+          options, 
+          correctAnswer, 
+          explanation, 
+          difficulty,
+          barrettLevel 
+        });
       }
     }
 
     return questions.slice(0, numQuestions);
   } catch (error) {
-    console.error('Gemini API error:', error);
-    throw new Error('Failed to generate quiz');
+    console.error('Gemini API error:', {
+      message: error.message,
+      status: error.status || error.response?.status,
+      code: error.code
+    });
+    
+    const enhancedError = new Error('Failed to generate quiz');
+    enhancedError.originalError = error;
+    enhancedError.status = error.status || error.response?.status || error.error?.code;
+    enhancedError.message = error.message || error.error?.message || 'Gemini API error';
+    
+    throw enhancedError;
   }
 };
 

@@ -70,19 +70,35 @@
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Track your learning progress and activity",
-    "totalDocuments": "Total Documents",
-    "totalFlashcards": "Total Flashcards",
-    "totalQuizzes": "Total Quizzes",
+    "totalDocuments": "Documents",
+    "totalFlashcards": "Flashcards",
+    "totalQuizzes": "Quizzes",
+    
+    "readingProfile": "Reading Profile",
+    "readingProfileDesc": "Reading comprehension assessment based on Barrett's Taxonomy",
+    
+    "levelLiteral": "Literal Comprehension",
+    "levelInferential": "Inferential Comprehension",
+    "levelEvaluative": "Evaluative Comprehension",
+    
+    "levelLiteralDesc": "Extract information directly stated in the text",
+    "levelInferentialDesc": "Read between the lines, make inferences and predictions",
+    "levelEvaluativeDesc": "Evaluate logic, validity, and bias",
+    
+    "recommendation": "Improvement suggestion:",
+    "focusOnLevel": "Focus on practicing {{level}} questions",
+    "practiceTip": "Create new quizzes at this level to improve your skills.",
+    
     "recentActivity": "Recent Activity",
-    "errorFetch": "Failed to fetch dashboard data.",
-    "noData": "No dashboard data available.",
-    "invalidDate": "Invalid Date",
     "activity": {
-      "accessedDoc": "Accessed Document:",
-      "attemptedQuiz": "Attempted Quiz:"
+      "accessedDoc": "Viewed document:",
+      "attemptedQuiz": "Attempted quiz:"
     },
-    "noActivity": "No recent activity yet.",
-    "startLearning": "Start learning to see your progress here"
+    
+    "noData": "No learning data yet",
+    "noActivity": "No recent activity",
+    "startLearning": "Start reading documents or taking quizzes to see statistics!",
+    "errorFetch": "Failed to load dashboard"
   },
   "documents": {
     "title": "My Documents",

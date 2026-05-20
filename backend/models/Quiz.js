@@ -38,6 +38,11 @@ const quizSchema = new mongoose.Schema({
       type: String,
       enum: ['easy', 'medium', 'hard'],
       default: 'medium'
+    },
+    barrettLevel: {
+      type: String,
+      enum: ['literal', 'inferential', 'evaluative'],
+      default: 'literal'
     }
   }],
   userAnswers: [{
@@ -69,12 +74,16 @@ const quizSchema = new mongoose.Schema({
   completedAt: {
     type: Date,
     default: null
+  },
+  levelScores: {
+    literal: { type: Number, default: 0 },
+    inferential: { type: Number, default: 0 },
+    evaluative: { type: Number, default: 0 }
   }
 }, {
   timestamps: true
 });
 
-// Index for faster queries
 quizSchema.index({ userId: 1, documentId: 1 });
 
 const Quiz = mongoose.model('Quiz', quizSchema);

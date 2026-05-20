@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Book, Lightbulb, Target } from 'lucide-react';
 import quizService from '../../services/quizService';
 import PageHeader from '../../components/common/PageHeader';
 import Spinner from '../../components/common/Spinner';
@@ -34,6 +34,15 @@ const QuizTakePage = () => {
 
     fetchQuiz();
   }, [quizId]);
+
+  const getBarrettConfig = (level) => {
+  const configs = {
+    literal: { label: t('quizzes.levelLiteral') || 'Mức 1: Nhớ', icon: Book, color: 'blue', desc: t('quizzes.levelLiteralDesc') },
+    inferential: { label: t('quizzes.levelInferential') || 'Mức 3: Suy luận', icon: Lightbulb, color: 'purple', desc: t('quizzes.levelInferentialDesc') },
+    evaluative: { label: t('quizzes.levelEvaluative') || 'Mức 5: Đánh giá', icon: Target, color: 'amber', desc: t('quizzes.levelEvaluativeDesc') }
+  };
+    return configs[level || 'literal'];
+  };
 
   const handleOptionChange = (questionId, optionIndex) => {
     setSelectedAnswers((prev) => ({
@@ -121,7 +130,28 @@ const QuizTakePage = () => {
 
       {/* Question card */}
       <div className="bg-white/80 backdrop-blur-xl border-2 border-slate-200 rounded-2xl shadow-lg shadow-slate-200/50 p-6 mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-merald-50 to-teal-50 border border-emerald-200 rounded-xl mb-6">
+        
+        {currentQuestion.barrettLevel && (
+        <div className="mb-4">
+          {(() => {
+            const config = getBarrettConfig(currentQuestion.barrettLevel);
+            const Icon = config.icon;
+            return (
+              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
+                config.color === 'blue' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                config.color === 'purple' ? 'bg-purple-50 border-purple-200 text-purple-700' :
+                'bg-amber-50 border-amber-200 text-amber-700'
+              }`}>
+                <Icon className="w-4 h-4" strokeWidth={2} />
+                <span className="text-xs font-semibold">{config.label}</span>
+                <span className="text-[10px] opacity-75 hidden sm:inline">• {config.desc}</span>
+              </div>
+            );
+          })()}
+        </div>
+        )}
+
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl mb-6">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
           <span className="text-sm font-semibold text-emerald-700">
             {t('quizzes.questionBadge', { number: currentQuestionIndex + 1 })}

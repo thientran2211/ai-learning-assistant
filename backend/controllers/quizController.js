@@ -85,9 +85,13 @@ export const submitQuiz = async (req, res, next) => {
       });
     }
 
-    // process answer
     let correctCount = 0;
     const userAnswers = [];
+    const levelScores = {
+      literal: { correct: 0, total: 0 },
+      inferential: { correct: 0, total: 0 },
+      evaluative: { correct: 0, total: 0 }
+    };
 
     answers.forEach(answer => {
       const { questionIndex, selectedAnswer } = answer;
@@ -95,8 +99,14 @@ export const submitQuiz = async (req, res, next) => {
       if (questionIndex < quiz.questions.length) {
         const question = quiz.questions[questionIndex];
         const isCorrect = selectedAnswer === question.correctAnswer;
+        const barrettLevel = question.barrettLevel || 'literal';
 
-        if (isCorrect) correctCount++;
+        if (isCorrect) {
+          correctCount++;
+          levelScores[barrettLevel].correct++;
+        }
+        
+        levelScores[barrettLevel].total++;
 
         userAnswers.push({
           questionIndex,
@@ -107,12 +117,19 @@ export const submitQuiz = async (req, res, next) => {
       }
     });
 
-    // calculate score
+    // calculate overall score
     const score = Math.round((correctCount / quiz.totalQuestions) * 100);
+
+    const levelPercentages = {};
+    Object.keys(levelScores).forEach(level => {
+      const { correct, total } = levelScores[level];
+      levelPercentages[level] = total > 0 ? Math.round((correct / total) * 100) : 0;
+    });
 
     // update quiz
     quiz.userAnswers = userAnswers;
     quiz.score = score;
+    quiz.levelScores = levelPercentages;
     quiz.completedAt = new Date();
 
     await quiz.save();
@@ -125,6 +142,7 @@ export const submitQuiz = async (req, res, next) => {
         correctCount,
         totalQuestions: quiz.totalQuestions,
         percentage: score,
+        levelScores: levelPercentages, 
         userAnswers
       },
       message: 'Quiz submitted successfully'

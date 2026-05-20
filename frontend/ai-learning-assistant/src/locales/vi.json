@@ -12,7 +12,8 @@
     "back": "Quay lại",
     "upload": "Tải lên",
     "home": "Trang chủ",
-    "backToHome": "Về trang chủ"
+    "backToHome": "Về trang chủ",
+    "skip": "Bỏ qua"
   },
   "header": {
     "notifications": "Thông báo",
@@ -65,20 +66,35 @@
   },
   "dashboard": {
     "title": "Bảng điều khiển",
-    "subtitle": "Theo dõi tiến độ học tập và hoạt động của bạn",
-    "totalDocuments": "Tổng số tài liệu",
-    "totalFlashcards": "Tổng số Flashcards",
-    "totalQuizzes": "Tổng số bài Quiz",
+    "subtitle": "Tổng quan tiến độ học tập của bạn",
+    "totalDocuments": "Tài liệu",
+    "totalFlashcards": "Flashcards",
+    "totalQuizzes": "Quiz",
+    
+    "readingProfile": "Hồ sơ đọc hiểu",
+    "readingProfileDesc": "Đánh giá kỹ năng đọc hiểu theo Barrett's Taxonomy",
+    
+    "levelLiteral": "Hiểu trực tiếp",
+    "levelInferential": "Suy luận",
+    "levelEvaluative": "Đánh giá",
+    
+    "levelLiteralDesc": "Trích xuất thông tin trực tiếp từ văn bản",
+    "levelInferentialDesc": "Suy luận, đọc giữa các dòng, dự đoán",
+    "levelEvaluativeDesc": "Đánh giá logic, tính hợp lý, thiên kiến",
+    
+    "recommendation": "Gợi ý cải thiện:",
+    "focusOnLevel": "Tập trung luyện các câu hỏi mức {{level}}",
+    "practiceTip": " Tạo quiz mới với mức độ này để cải thiện kỹ năng.",
+    
     "recentActivity": "Hoạt động gần đây",
-    "errorFetch": "Không thể tải dữ liệu bảng điều khiển.",
-    "noData": "Không có dữ liệu bảng điều khiển.",
-    "invalidDate": "Ngày không hợp lệ",
     "activity": {
-      "accessedDoc": "Đã truy cập tài liệu:",
-      "attemptedQuiz": "Đã làm bài Quiz:"
+      "accessedDoc": "Đã xem tài liệu:",
+      "attemptedQuiz": "Đã làm quiz:"
     },
-    "noActivity": "Chưa có hoạt động nào gần đây.",
-    "startLearning": "Bắt đầu học để xem tiến độ tại đây"
+    "noData": "Chưa có dữ liệu học tập",
+    "noActivity": "Chưa có hoạt động gần đây",
+    "startLearning": "Bắt đầu đọc tài liệu hoặc làm quiz để xem thống kê!",
+    "errorFetch": "Không thể tải dashboard"
   },
   "documents": {
     "title": "Tài liệu của tôi",
@@ -228,10 +244,25 @@
     "scoreGreat": "Rất tốt!",
     "scoreGood": "Tốt!",
     "scoreNotBad": "Khá!",
+    "labelBarrettLevel": "Mức độ đọc hiểu",
+    "levelMixed": "Hỗn hợp",
+    "levelAll": "Tất cả mức độ",
+    "levelLiteral": "Nhớ",
+    "levelInferential": "Suy luận", 
+    "levelEvaluative": "Đánh giá",
     "scoreKeepPracticing": "Hãy tiếp tục luyện tập!",
     "modalGenerateTitle": "Tạo bài Quiz mới",
     "modalDeleteTitle": "Xác nhận xóa bài Quiz",
-    "modalDeleteDesc": "Bạn có chắc chắn muốn xóa bài Quiz: \"{{title}}\"? Hành động này không thể hoàn tác."
+    "modalDeleteDesc": "Bạn có chắc chắn muốn xóa bài Quiz: \"{{title}}\"? Hành động này không thể hoàn tác.",
+     
+    "levelAllDesc": "Tạo câu hỏi đa dạng các mức độ",
+    "levelLiteralDesc": "Trích xuất thông tin trực tiếp",
+    "levelInferentialDesc": "Suy luận, đọc giữa các dòng",
+    "levelEvaluativeDesc": "Đánh giá logic, tính hợp lý",
+    
+    "readingProfile": "Hồ sơ đọc hiểu",
+    "recommendation": "Gợi ý:",
+    "focusOn": "Tập trung luyện"
   },
   "auth": {
     "loginTitle": "Chào mừng trở lại",

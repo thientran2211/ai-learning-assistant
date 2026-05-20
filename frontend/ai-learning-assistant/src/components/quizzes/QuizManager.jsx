@@ -16,13 +16,22 @@ const QuizManager = ({ documentId }) => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+
   const [numQuestions, setNumQuestions] = useState(5);
+  const [barrettLevel, setBarrettLevel] = useState('all');
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
 
   const { t } = useTranslation();
+
+  const barrettLabels = {
+    all: t('quizzes.levelAll') || 'Tất cả mức độ',
+    literal: t('quizzes.levelLiteral') || 'Mức 1: Nhớ',
+    inferential: t('quizzes.levelInferential') || 'Mức 3: Suy luận',
+    evaluative: t('quizzes.levelEvaluative') || 'Mức 5: Đánh giá'
+  };
 
   const fetchQuizzes = async () => {
     setLoading(true);
@@ -47,9 +56,14 @@ const QuizManager = ({ documentId }) => {
     e.preventDefault();
     setGenerating(true);
     try {
-      await aiService.generateQuiz(documentId, { numQuestions });
+      await aiService.generateQuiz(documentId, { 
+        numQuestions,
+        barrettLevel 
+      });
       toast.success(t('quizzes.successGenerate'));
       setIsGenerateModalOpen(false);
+      setNumQuestions(5);
+      setBarrettLevel('all');
       fetchQuizzes();
     } catch (error) {
       toast.error(error.message || t('quizzes.errorGenerate'));
@@ -96,7 +110,12 @@ const QuizManager = ({ documentId }) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {quizzes.map((quiz) => (
-          <QuizCard key={quiz._id} quiz={quiz} onDelete={handleDeleteRequest} />
+          <QuizCard 
+            key={quiz._id} 
+            quiz={quiz} 
+            onDelete={handleDeleteRequest}
+            showBarrettBadge={true}
+          />
         ))}
       </div>
     );
@@ -132,6 +151,33 @@ const QuizManager = ({ documentId }) => {
               required
               className="w-full h-9 px-3 border border-neutral-200 rounded-lg bg-white text-sm text-neutral-900 placeholder-neutral-400 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#00d492] focus:border-transparent"
             />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-neutral-700 mb-1.5">
+              {t('quizzes.labelBarrettLevel') || 'Mức độ đọc hiểu'}
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(barrettLabels).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setBarrettLevel(value)}
+                  className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all text-left ${
+                    barrettLevel === value
+                      ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                      : 'bg-white text-neutral-700 border-neutral-200 hover:border-emerald-300 hover:bg-emerald-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-neutral-500 mt-1.5">
+              {barrettLevel === 'all' && t('quizzes.levelAllDesc') || 
+               barrettLevel === 'literal' && t('quizzes.levelLiteralDesc') ||
+               barrettLevel === 'inferential' && t('quizzes.levelInferentialDesc') ||
+               t('quizzes.levelEvaluativeDesc')}
+            </p>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button

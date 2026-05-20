@@ -29,8 +29,54 @@ export const getDashboard = async (req, res, next) => {
 
     // Get quiz statistics
     const quizzes = await Quiz.find({ userId, completedAt: { $ne: null } });
+
     const averageScore = quizzes.length > 0
       ? Math.round(quizzes.reduce((sum, q) => sum + q.score, 0) / quizzes.length) : 0;
+
+    // Calculate reading profile by Barrett Level
+    const readingProfile = {
+      literal: { total: 0, correct: 0, count: 0 },
+      inferential: { total: 0, correct: 0, count: 0 },
+      evaluative: { total: 0, correct: 0, count: 0 }
+    };
+
+    quizzes.forEach(quiz => {
+      // Case 1: Quiz has levelScores (new format from our update)
+      if (quiz.levelScores) {
+        Object.keys(readingProfile).forEach(level => {
+          if (quiz.levelScores[level] !== undefined) {
+            readingProfile[level].count += 1;
+            readingProfile[level].total += 100;
+            readingProfile[level].correct += quiz.levelScores[level];
+          }
+        });
+      }
+      // Case 2: Fallback - calculate from questions (old format or no levelScores)
+      else if (quiz.questions?.length && quiz.userAnswers?.length) {
+        quiz.questions.forEach((question, qIndex) => {
+          const level = question.barrettLevel || 'literal';
+          const userAnswer = quiz.userAnswers.find(a => a.questionIndex === qIndex);
+          
+          if (userAnswer) {
+            readingProfile[level].total += 1;
+            if (userAnswer.isCorrect) readingProfile[level].correct += 1;
+          }
+        });
+      }
+    });
+
+    // Convert to percentages
+    const levelPercentages = {};
+    Object.keys(readingProfile).forEach(level => {
+      const { correct, total } = readingProfile[level];
+      levelPercentages[level] = total > 0 ? Math.round((correct / total) * 100) : null;
+    });
+
+    // Find weakest level for recommendation
+    const validLevels = Object.entries(levelPercentages).filter(([_, val]) => val !== null);
+    const weakestLevel = validLevels.length > 0 
+      ? validLevels.sort((a, b) => a[1] - b[1])[0][0] 
+      : null;
 
     // Recent activity
     const recentDocuments = await Document.find({ userId })
@@ -45,7 +91,7 @@ export const getDashboard = async (req, res, next) => {
       .select('title score totalQuestions completedAt');
 
     // Study streak (simplified - in production, track daily activity)
-    const studyStreak = Math.floor(Math.random() * 7) + 1; // mock data
+    const studyStreak = Math.floor(Math.random() * 7) + 1;
 
     res.status(200).json({
       success: true,
@@ -60,6 +106,11 @@ export const getDashboard = async (req, res, next) => {
           completedQuizzes,
           averageScore,
           studyStreak
+        },
+        readingProfile: {
+          scores: levelPercentages,
+          weakestLevel,
+          details: readingProfile
         },
         recentActivity: {
           documents: recentDocuments,

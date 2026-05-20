@@ -3,11 +3,6 @@ import * as groqService from './groqService.js';
 
 /**
  * AI Orchestrator: Intelligent model selection based on task type
- * 
- * Strategy:
- * - Chat/Explain: Groq (tốc độ cao, latency thấp)
- * - Summary/Flashcard/Quiz: Gemini (context window lớn, xử lý PDF dài tốt)
- * - Fallback: Nếu model chính lỗi sử dụng model dự phòng
  */
 
 export const AI_MODELS = {
@@ -15,7 +10,6 @@ export const AI_MODELS = {
     GROQ: 'groq'
 };
 
-// Cấu hình cho từng loại tác vụ
 export const TASK_CONFIG = {
     chat: {
         primary: AI_MODELS.GROQ,
@@ -25,7 +19,7 @@ export const TASK_CONFIG = {
     explain: {
         primary: AI_MODELS.GROQ,
         fallback: AI_MODELS.GEMINI,
-        reason: 'Explain cần phải hồi nhanh, context thường ngắn'
+        reason: 'Explain cần phản hồi nhanh, context thường ngắn'
     },
     summary: {
         primary: AI_MODELS.GEMINI,
@@ -38,42 +32,47 @@ export const TASK_CONFIG = {
         reason: 'Flashcards cần hiểu sâu ngữ nghĩa tài liệu'
     },
     quiz: {
-        primary: AI_MODELS.GEMINI,
-        fallback: AI_MODELS.GROQ,
-        reason: 'Quiz cần chất lượng câu hỏi chính xác cao'
+        primary: AI_MODELS.GROQ,
+        fallback: AI_MODELS.GEMINI,
+        // reason: 'Quiz cần chất lượng câu hỏi chính xác cao'
+        reason: 'Groq ổn định hơn cho quiz generation'
     }
 };
 
-/**
- * Lấy service module theo tên model
- */
 const getService = (modelName) => {
   if (modelName === AI_MODELS.GROQ) return groqService;
-  return geminiService; // Default to Gemini
+  return geminiService;
 };
 
-/**
- * Kiểm tra lỗi có nên retry/fallback không
- */
 const isRetryableError = (error) => {
-  const status = error?.status || error?.response?.status;
-  const message = error?.message?.toLowerCase() || '';
+  const { status, message, code } = extractErrorDetails(error);
   
-  return (
-    status === 503 || // Service unavailable
-    status === 429 || // Rate limit
-    status === 529 || // Server overloaded
-    message.includes('timeout') ||
+  const isQuotaExceeded = 
+    status === 429 ||
+    status === 'RESOURCE_EXHAUSTED' ||
+    message.includes('quota exceeded') ||
+    message.includes('rate limit') ||
+    message.includes('too many requests') ||
+    message.includes('please retry in');
+  
+  // Check for service unavailable
+  const isUnavailable = 
+    status === 503 ||
+    status === 'UNAVAILABLE' ||
     message.includes('high demand') ||
-    message.includes('temporarily unavailable')
-  );
+    message.includes('temporarily unavailable');
+  
+  // Check for network errors
+  const isNetworkError = 
+    code === 'UND_ERR_CONNECT_TIMEOUT' ||
+    message.includes('timeout') ||
+    message.includes('fetch failed');
+  
+  return isQuotaExceeded || isUnavailable || isNetworkError;
 };
 
 /**
- * Hàm điều phối chính: Execute với automatic fallback
- * @param {string} taskType - 'chat' | 'explain' | 'summary' | 'flashcards' | 'quiz'
- * @param {string} functionName - Tên hàm cần gọi trong service
- * @param  {...any} args - Các tham số truyền vào hàm
+ * Main orchestration function with automatic fallback
  */
 export const executeWithFallback = async (taskType, functionName, ...args) => {
     const config = TASK_CONFIG[taskType];
@@ -88,25 +87,52 @@ export const executeWithFallback = async (taskType, functionName, ...args) => {
 
     try {
         console.log(`[Orchestrator] ${taskType}: Using ${config.primary.toUpperCase()} (${config.reason})`);
-        return await primaryService[functionName](...args);
+        const result = await primaryService[functionName](...args);
+        console.log(`[Orchestrator] ${config.primary.toUpperCase()} succeeded for ${taskType}`);
+        return result;
     } catch (primaryError) {
-        console.warn(`[Orchestrator] ${config.primary.toUpperCase()} failed for ${taskType}:`, primaryError.message);
+        const { status, message, code } = extractErrorDetails(primaryError);
+        
+        console.warn(`[Orchestrator] ${config.primary.toUpperCase()} failed for ${taskType}:`, {
+            status,
+            message: message.substring(0, 150),
+            code,
+            shouldFallback: isRetryableError(primaryError)
+        });
 
-        // Chỉ fallback nếu là lỗi tạm thời
+        // Only fallback if it's a retryable error
         if (isRetryableError(primaryError)) {
-            console.log(`[Orchestrator] Falling back to ${config.fallback.toUpperCase()}...`);
+            console.log(`[Orchestrator] ⚡ Falling back to ${config.fallback.toUpperCase()}...`);
             try {
                 const result = await fallbackService[functionName](...args);
-                console.log(`[Orchestrator] Fallback to ${config.fallback.toUpperCase()} succeeded`);
+                console.log(`[Orchestrator] Fallback to ${config.fallback.toUpperCase()} succeeded for ${taskType}`);
                 return result;
             } catch (fallbackError) {
-                console.error(`[Orchestrator] Both ${config.primary} and ${config.fallback} failed for ${taskType}`);
-                throw new Error(`AI service temporarily unavailable. Please try again later.`);
+                const fallbackDetails = extractErrorDetails(fallbackError);
+                console.error(`[Orchestrator] Both models failed for ${taskType}:`, {
+                    primary: {
+                        model: config.primary,
+                        status,
+                        message: message.substring(0, 100)
+                    },
+                    fallback: {
+                        model: config.fallback,
+                        status: fallbackDetails.status,
+                        message: fallbackDetails.message.substring(0, 100)
+                    }
+                });
+                
+                // Return user-friendly error
+                throw new Error(`AI service temporarily unavailable. Please try again later. (Gemini: ${status}, Groq: ${fallbackDetails.status})`);
             }
         }
 
-        // Lỗi không retryable (auth, invalid input...) thì throw luôn
-        console.error(`❌ [Orchestrator] Non-retryable error in ${config.primary.toUpperCase()}:`, primaryError.message);
-        throw primaryError;                                                                         
+        // Non-retryable error (auth, invalid input, etc.)
+        console.error(`[Orchestrator] Non-retryable error in ${config.primary.toUpperCase()}:`, {
+            status,
+            message: message.substring(0, 150),
+            code
+        });
+        throw primaryError;
     }
 };

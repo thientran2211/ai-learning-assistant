@@ -4,10 +4,12 @@ import { useDateFormat } from '../../utils/dateFormatter';
 import Spinner from '../../components/common/Spinner';
 import progressService from '../../services/progressService';
 import toast from 'react-hot-toast';
-import { FileText, BookOpen, BrainCircuit, TrendingUp, Clock } from 'lucide-react';
+import { 
+  FileText, BookOpen, BrainCircuit, TrendingUp, Clock, 
+  Target, Lightbulb, Book, BarChart3, ArrowUpRight 
+} from 'lucide-react';
 
 const DashboardPage = () => {
-
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
@@ -69,11 +71,36 @@ const DashboardPage = () => {
     }
   ];
 
+  const getLevelConfig = (level) => {
+    const configs = {
+      literal: { 
+        label: t('dashboard.levelLiteral') || 'Mức 1: Nhớ', 
+        icon: Book, 
+        color: 'blue',
+        desc: t('dashboard.levelLiteralDesc') || 'Trích xuất thông tin trực tiếp'
+      },
+      inferential: { 
+        label: t('dashboard.levelInferential') || 'Mức 3: Suy luận', 
+        icon: Lightbulb, 
+        color: 'purple',
+        desc: t('dashboard.levelInferentialDesc') || 'Đọc giữa các dòng, suy luận'
+      },
+      evaluative: { 
+        label: t('dashboard.levelEvaluative') || 'Mức 5: Đánh giá', 
+        icon: Target, 
+        color: 'amber',
+        desc: t('dashboard.levelEvaluativeDesc') || 'Đánh giá logic, tính hợp lý'
+      }
+    };
+    return configs[level] || configs.literal;
+  };
+
   return (
     <div className="min-h-screen">
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-30 pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto">
+
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-medium text-slate-900 tracking-tight mb-2">
@@ -105,6 +132,94 @@ const DashboardPage = () => {
             </div>
           ))}
         </div>
+
+        {/* Reading Profile Section */}
+        {dashboardData.readingProfile?.scores && (
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl shadow-slate-200/50 p-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-emerald-600" strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    {t('dashboard.readingProfile') || 'Reading Profile'}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {t('dashboard.readingProfileDesc') || "Đánh giá kỹ năng đọc hiểu theo Barrett''s Taxonomy"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Level Bars */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {['literal', 'inferential', 'evaluative'].map((level) => {
+                const config = getLevelConfig(level);
+                const Icon = config.icon;
+                const score = dashboardData.readingProfile.scores[level];
+                const hasData = score !== null && score !== undefined;
+                
+                return (
+                  <div 
+                    key={level} 
+                    className={`p-4 rounded-xl border transition-all ${
+                      hasData 
+                        ? 'bg-slate-50 border-slate-200 hover:border-slate-300' 
+                        : 'bg-slate-50/50 border-slate-100 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`w-4 h-4 text-${config.color}-600`} strokeWidth={2} />
+                        <span className="text-sm font-medium text-slate-700">{config.label}</span>
+                      </div>
+                      {hasData ? (
+                        <span className={`text-lg font-bold text-${config.color}-600`}>{score}%</span>
+                      ) : (
+                        <span className="text-xs text-slate-400">Chưa có dữ liệu</span>
+                      )}
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
+                      <div 
+                        className={`h-full bg-${config.color}-500 rounded-full transition-all duration-700 ease-out`}
+                        style={{ width: hasData ? `${score}%` : '0%' }}
+                      />
+                    </div>
+                    
+                    {/* Description */}
+                    <p className="text-[10px] text-slate-500">{config.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Recommendation */}
+            {dashboardData.readingProfile.weakestLevel && dashboardData.readingProfile.scores[dashboardData.readingProfile.weakestLevel] < 70 && (
+              <div className="p-4 bg-linear-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                    <Lightbulb className="w-4 h-4 text-amber-600" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-amber-900 mb-1">
+                      {t('dashboard.recommendation') || '💡 Gợi ý cải thiện:'}
+                    </p>
+                    <p className="text-sm text-amber-800">
+                      {t('dashboard.focusOnLevel', { 
+                        level: getLevelConfig(dashboardData.readingProfile.weakestLevel).label 
+                      }) || 'Tập trung luyện các câu hỏi'} 
+                      <span className="font-semibold"> {dashboardData.readingProfile.scores[dashboardData.readingProfile.weakestLevel]}%</span>.
+                      {t('dashboard.practiceTip') || ' Tạo quiz mới với mức độ này để cải thiện kỹ năng.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Recent activity section */}
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-xl shadow-xl shadow-slate-200/50 p-8">
